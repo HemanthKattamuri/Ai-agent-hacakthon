@@ -1,2297 +1,911 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" data-theme="cyberpunk" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResolveFlow — Autonomous Customer Resolution Agent</title>
-  <meta name="description" content="Autonomous AI customer resolution agent featuring real-time ReAct decision loops, dynamic replanning on failure, simulated enterprise SQLite ledger mutations, and cryptographic verification.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366F1'><path d='M12 2a2 2 0 0 1 2 2v1a7 7 0 0 1 7 7v4a2 2 0 0 1-2 2h-1v2a2 2 0 0 1-2 2h-8a2 2 0 0 1-2-2v-2H5a2 2 0 0 1-2-2v-4a7 7 0 0 1 7-7V4a2 2 0 0 1 2-2z'/></svg>">
+  <title>QuestFlow — RPG Gamified Task & Habit Progression Engine</title>
+  <meta name="description" content="Level up your real life with QuestFlow. Transform tasks, coding sprints, workouts, and daily habits into an immersive RPG adventure with non-linear leveling, 5-attribute progression, streaks, virtual armory, and boss raids.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2306b6d4'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
   
-  <!-- Modern Typography Fonts -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* Design Tokens & Theme Variables */
     :root {
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-display: 'Outfit', var(--font-sans);
-      --font-mono: 'JetBrains Mono', monospace;
-      
       --bg-primary: #020617;
-      --bg-secondary: #0f172a;
-      --bg-card: #1e293b;
-      --bg-card-hover: #334155;
-      --bg-elevated: #1e293b;
-      --border-color: rgba(148, 163, 184, 0.12);
-      --border-subtle: rgba(148, 163, 184, 0.08);
-      
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --text-muted: #64748b;
-      
-      --primary: #6366f1;
-      --primary-hover: #4f46e5;
-      --primary-light: rgba(99, 102, 241, 0.15);
-      
       --accent-cyan: #06b6d4;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-rose: #f43f5e;
-      --accent-purple: #a855f7;
-      
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-      
-      --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-      --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
-      --shadow-glow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+      --accent-indigo: #6366f1;
     }
-
-    html:not(.dark) {
-      --bg-primary: #f1f5f9;
-      --bg-secondary: #ffffff;
-      --bg-card: #ffffff;
-      --bg-card-hover: #f8fafc;
-      --bg-elevated: #ffffff;
-      --border-color: rgba(148, 163, 184, 0.25);
-      --border-subtle: rgba(148, 163, 184, 0.15);
-      
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      --text-muted: #94a3b8;
-      
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: rgba(79, 70, 229, 0.1);
-      
-      --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-      --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      --shadow-glow: 0 0 20px -3px rgba(79, 70, 229, 0.15);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      font-family: var(--font-sans);
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      transition: background-color 0.25s ease, color 0.25s ease;
+      background-color: #020617;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
     }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.02em;
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Outfit', sans-serif;
     }
-
-    code, pre, .font-mono {
-      font-family: var(--font-mono);
-    }
-
-    /* Scrollbar Styling */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.3);
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(148, 163, 184, 0.5);
-    }
-
-    /* Utilities */
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 1.25rem 1.5rem;
-      width: 100%;
-    }
-
-    .glass-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-card);
-      backdrop-filter: blur(12px);
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 9999px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    .badge-primary {
-      background: rgba(99, 102, 241, 0.15);
-      color: #818cf8;
-      border: 1px solid rgba(99, 102, 241, 0.3);
-    }
-    .badge-emerald {
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-    .badge-amber {
-      background: rgba(245, 158, 11, 0.15);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.3);
-    }
-    .badge-rose {
-      background: rgba(244, 63, 94, 0.15);
-      color: #fb7185;
-      border: 1px solid rgba(244, 63, 94, 0.3);
-    }
-    .badge-cyan {
-      background: rgba(6, 182, 212, 0.15);
-      color: #38bdf8;
-      border: 1px solid rgba(6, 182, 212, 0.3);
-    }
-    .badge-purple {
-      background: rgba(168, 85, 247, 0.15);
-      color: #c084fc;
-      border: 1px solid rgba(168, 85, 247, 0.3);
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 0.82rem;
-      font-weight: 600;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
-      font-family: inherit;
-    }
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed !important;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #06b6d4 100%);
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
-    }
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.45);
-    }
-    .btn-secondary {
-      background: var(--bg-card);
-      color: var(--text-primary);
-      border-color: var(--border-color);
-    }
-    .btn-secondary:hover:not(:disabled) {
-      background: var(--bg-card-hover);
-      border-color: var(--border-color);
-    }
-    .btn-icon {
-      padding: 0.5rem;
-      border-radius: var(--radius-md);
-    }
-
-    /* Navbar */
-    .navbar {
-      background: var(--bg-secondary);
-      border-bottom: 1px solid var(--border-color);
-      position: sticky;
-      top: 0;
-      z-index: 40;
-      backdrop-filter: blur(16px);
-    }
-    .navbar-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 4rem;
-    }
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      text-decoration: none;
-      color: inherit;
-    }
-    .logo-icon {
-      width: 2.25rem;
-      height: 2.25rem;
-      border-radius: var(--radius-md);
-      background: linear-gradient(135deg, #6366f1, #06b6d4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
-    }
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* Banner */
-    .track-banner {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: var(--radius-xl);
-      padding: 1.25rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
-    }
-    .workflow-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0.75rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .workflow-step {
-      padding: 0.6rem 0.75rem;
-      border-radius: var(--radius-md);
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      align-items: flex-start;
-      gap: 0.6rem;
-    }
-    .workflow-step.active {
-      background: rgba(99, 102, 241, 0.15);
-      border-color: rgba(99, 102, 241, 0.5);
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
-      transform: translateY(-2px);
-    }
-    .workflow-step.replanning-active {
-      background: rgba(245, 158, 11, 0.18);
-      border-color: rgba(245, 158, 11, 0.6);
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
-      transform: translateY(-2px);
-    }
-    .workflow-step-num {
-      width: 1.4rem;
-      height: 1.4rem;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 700;
-      flex-shrink: 0;
-      color: var(--text-muted);
-    }
-    .workflow-step.active .workflow-step-num {
-      background: #6366f1;
-      color: white;
-    }
-    .workflow-step.replanning-active .workflow-step-num {
-      background: #f59e0b;
-      color: white;
-    }
-
-    /* Main Dashboard Grid */
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 310px 1fr 340px;
-      gap: 1.5rem;
-      align-items: start;
-    }
-    @media (max-width: 1200px) {
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Scenario List */
-    .scenario-card {
-      padding: 0.85rem 1rem;
-      border-radius: var(--radius-md);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 0.6rem;
-      position: relative;
-    }
-    .scenario-card:hover {
-      background: var(--bg-card-hover);
-      border-color: rgba(99, 102, 241, 0.4);
-      transform: translateX(2px);
-    }
-    .scenario-card.active {
-      background: var(--bg-card);
-      border-color: #6366f1;
-      box-shadow: 0 0 0 1px #6366f1, 0 4px 12px rgba(99, 102, 241, 0.15);
-    }
-    .scenario-card.active::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: #6366f1;
-      border-radius: var(--radius-md) 0 0 var(--radius-md);
-    }
-
-    /* Timeline Stepper */
-    .timeline-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.85rem;
-      position: relative;
-      padding: 0.5rem 0;
-    }
-    .timeline-step {
-      padding: 1rem;
-      border-radius: var(--radius-lg);
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-subtle);
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      animation: fadeInStep 0.35s ease forwards;
-    }
-    @keyframes fadeInStep {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .timeline-step.step-replanning {
-      border-color: rgba(245, 158, 11, 0.6);
-      background: rgba(245, 158, 11, 0.05);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.12);
-    }
-    .timeline-step.step-verification {
-      border-color: rgba(16, 185, 129, 0.5);
-      background: rgba(16, 185, 129, 0.04);
-    }
-    .timeline-step.step-failed {
-      border-color: rgba(244, 63, 94, 0.6);
-      background: rgba(244, 63, 94, 0.05);
-    }
-
-    /* Modals */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.75);
-      backdrop-filter: blur(8px);
-      z-index: 60;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-    .modal-overlay.open {
-      display: flex;
-      animation: fadeInModal 0.2s ease forwards;
-    }
-    @keyframes fadeInModal {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    .modal-content {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-xl);
-      max-width: 800px;
-      width: 100%;
-      max-height: 88vh;
-      overflow-y: auto;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-    }
-
-    /* Drawer */
-    .drawer-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.6);
-      backdrop-filter: blur(4px);
-      z-index: 55;
-      display: none;
-    }
-    .drawer-overlay.open {
-      display: block;
-    }
-    .drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: min(520px, 92vw);
-      background: var(--bg-secondary);
-      border-left: 1px solid var(--border-color);
-      z-index: 56;
-      box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-      transform: translateX(100%);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      flex-direction: column;
-    }
-    .drawer.open {
-      transform: translateX(0);
-    }
-
-    /* Table styles */
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.78rem;
-      text-align: left;
-    }
-    .data-table th {
-      padding: 0.6rem 0.8rem;
-      background: rgba(148, 163, 184, 0.08);
-      color: var(--text-secondary);
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color);
-    }
-    .data-table td {
-      padding: 0.6rem 0.8rem;
-      border-bottom: 1px solid var(--border-subtle);
-      color: var(--text-primary);
-    }
-    .data-table tr:hover td {
-      background: rgba(148, 163, 184, 0.04);
-    }
-
-    /* JSON display box */
-    .code-box {
-      background: #090d16;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: var(--radius-md);
-      padding: 0.75rem;
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      color: #e2e8f0;
-      overflow-x: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    /* Range slider custom */
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: rgba(148, 163, 184, 0.2);
-      height: 6px;
-      border-radius: 9999px;
-      outline: none;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 9999px;
-      background: #6366f1;
-      cursor: pointer;
-      box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
-      border: 2px solid white;
-    }
+    @keyframes spin-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes spin-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+    @keyframes pulse-glow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+    
+    .anim-spin-slow { animation: spin-cw 16s linear infinite; }
+    .anim-spin-reverse { animation: spin-ccw 8s linear infinite; }
+    .anim-float { animation: float 4s ease-in-out infinite; }
+    .anim-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(6, 182, 212, 0.6); }
   </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
 
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="container navbar-inner">
-      <a href="#" class="logo-container">
-        <div class="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
-        </div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em;">ResolveFlow</span>
-            <span class="badge badge-primary">Agentic AI</span>
-          </div>
-          <p style="font-size: 0.68rem; color: var(--text-muted); font-weight: 500;">Autonomous Enterprise ReAct Resolution Agent</p>
-        </div>
-      </a>
-
-      <div class="nav-actions">
-        <!-- Live Connection Status Pill -->
-        <div id="backend-status-pill" class="badge badge-cyan" title="Auto-detects FastAPI backend or runs rich in-browser simulation">
-          <span style="width: 6px; height: 6px; border-radius: 9999px; background: #06b6d4; display: inline-block;"></span>
-          <span id="backend-status-text">Simulated Engine Active</span>
-        </div>
-
-        <!-- Reset Demo Data Button -->
-        <button id="btn-reset-demo" class="btn btn-secondary btn-icon" title="Reset Demo Scenarios & Database">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-          <span style="font-size: 0.78rem;">Reset DB</span>
-        </button>
-
-        <!-- Database Inspector Button -->
-        <button id="btn-open-db" class="btn btn-secondary" title="Inspect SQLite database tables">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          <span>DB Inspector</span>
-        </button>
-
-        <!-- Policy Sandbox Button -->
-        <button id="btn-open-sandbox" class="btn btn-secondary" title="Adjust live warehouse stock and return rules">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-          <span>Sandbox</span>
-        </button>
-
-        <!-- Tool Audit Logs Button -->
-        <button id="btn-open-tools" class="btn btn-secondary" title="View Tool Calls Audit Log Drawer">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-          <span>Tools Log</span>
-        </button>
-
-        <!-- Theme Toggle -->
-        <button id="btn-toggle-theme" class="btn btn-secondary btn-icon" title="Toggle Dark/Light Mode">
-          <svg id="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        </button>
-      </div>
+  <!-- ========================================================================= -->
+  <!-- 1. AUTH GATEWAY (Login / Sign Up / 1-Click Demo Personas) -->
+  <!-- ========================================================================= -->
+  <div id="authGateway" class="relative min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-950">
+    <!-- Ambient Particles & Glowing Blobs -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-600/20 blur-[120px] anim-glow"></div>
+      <div class="absolute top-1/3 -right-40 w-96 h-96 rounded-full bg-cyan-600/20 blur-[140px] anim-glow"></div>
+      <div class="absolute -bottom-40 left-1/3 w-96 h-96 rounded-full bg-fuchsia-600/20 blur-[130px] anim-glow"></div>
+      <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 1px 1px, #fff 1px, transparent 0); background-size: 32px 32px;"></div>
     </div>
-  </header>
 
-  <!-- Main Content Area -->
-  <main class="container" style="flex: 1;">
-    
-    <!-- Track 3 Problem Statement 5 Banner -->
-    <section class="track-banner">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
-        <div style="max-width: 800px;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
-            <span class="badge badge-amber" style="background: rgba(245, 158, 11, 0.2); color: #fde68a;">Track 3: Smart Automation</span>
-            <span class="badge badge-primary">Problem Statement 5: Autonomous Customer Resolution Agent</span>
-          </div>
-          <h1 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 0.35rem;">
-            End-to-End Enterprise Resolution & Dynamic Re-planning Engine
-          </h1>
-          <p style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.45;">
-            Autonomous ReAct agent that evaluates customer claims, queries enterprise policy & live inventory, executes state mutations in SQLite, verifies state cryptographically with SHA-256 seals, and <strong>dynamically replans secondary remedies</strong> when encountering stock or policy blocks.
-          </p>
-        </div>
-
-        <button id="btn-open-specs" class="btn btn-secondary" style="background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.4); color: #c7d2fe;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <span>Challenge Specs</span>
-        </button>
-      </div>
-
-      <!-- 6-Step Workflow Progression -->
-      <div class="workflow-grid">
-        <div id="wf-step-1" class="workflow-step">
-          <div class="workflow-step-num">1</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Goal & Case State</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Formulates explicit objective & ReAct plan</div>
-          </div>
-        </div>
-
-        <div id="wf-step-2" class="workflow-step">
-          <div class="workflow-step-num">2</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Enterprise Data</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Queries order, customer, stock & policies</div>
-          </div>
-        </div>
-
-        <div id="wf-step-3" class="workflow-step">
-          <div class="workflow-step-num">3</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Select Resolution</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Evaluates policy windows & constraints</div>
-          </div>
-        </div>
-
-        <div id="wf-step-4" class="workflow-step">
-          <div class="workflow-step-num">4</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Execute Mutation</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Issues replacement, refund, or credit</div>
-          </div>
-        </div>
-
-        <div id="wf-step-5" class="workflow-step">
-          <div class="workflow-step-num">5</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Verify State Change</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Audits SQLite ledger with SHA-256 seal</div>
-          </div>
-        </div>
-
-        <div id="wf-step-6" class="workflow-step">
-          <div class="workflow-step-num">6</div>
-          <div>
-            <div style="font-size: 0.74rem; font-weight: 700; color: #f8fafc;">Dynamic Replanning</div>
-            <div style="font-size: 0.65rem; color: #94a3b8;">Pivots to secondary remedy if blocked</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3-Column Dashboard -->
-    <div class="dashboard-grid">
+    <!-- Gateway Main Card -->
+    <div class="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl border border-slate-800/80 bg-slate-900/80 backdrop-blur-2xl shadow-2xl shadow-cyan-950/40 overflow-hidden">
       
-      <!-- LEFT COLUMN: Scenarios & Active Ticket Details -->
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        
-        <!-- Scenario Selector Card -->
-        <div class="glass-card" style="padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-              <h2 style="font-size: 0.95rem;">Demo Scenarios</h2>
+      <!-- Left Hero Banner with Animated Logo -->
+      <div class="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-indigo-950/30 to-slate-950/90">
+        <div>
+          <!-- Animated 3D-Tilt Brand Logo -->
+          <div id="heroLogoContainer" class="mb-6 flex items-center gap-3.5 select-none cursor-pointer">
+            <div class="relative w-16 h-16 flex items-center justify-center">
+              <div class="absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/40 via-indigo-600/40 to-fuchsia-500/40 blur-lg animate-pulse"></div>
+              <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]">
+                <circle cx="50" cy="50" r="44" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="8 6 18 6" class="anim-spin-slow origin-center" opacity="0.8"/>
+                <circle cx="50" cy="50" r="35" fill="none" stroke="#c084fc" stroke-width="2.5" stroke-dasharray="14 10 24 10" class="anim-spin-reverse origin-center"/>
+                <polygon points="50,22 74,36 74,64 50,78 26,64 26,36" fill="rgba(99,102,241,0.3)" stroke="#06b6d4" stroke-width="2.5" class="animate-pulse origin-center"/>
+                <path d="M50 30 L55 45 L68 50 L55 55 L50 70 L45 55 L32 50 L45 45 Z" fill="url(#heroGrad)"/>
+                <circle cx="50" cy="50" r="4" fill="#ffffff"/>
+                <defs>
+                  <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4"/>
+                    <stop offset="50%" stop-color="#6366f1"/>
+                    <stop offset="100%" stop-color="#d946ef"/>
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
-            <button id="btn-open-custom-ticket" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.72rem;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              <span>Custom</span>
-            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent font-display">
+                  Quest<span class="text-cyan-400">Flow</span>
+                </span>
+                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                  RPG v2.0
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 font-medium">RPG Life Progression Engine</p>
+            </div>
           </div>
 
-          <div id="scenario-list">
-            <!-- Scenarios injected via JS -->
+          <p class="text-slate-300 text-sm leading-relaxed mb-6">
+            Transform everyday coding sprints, workout sets, and learning goals into an epic RPG quest. Level up 5 core attributes, defeat procrastination bosses, and forge legendary streaks.
+          </p>
+
+          <!-- Highlights -->
+          <div class="space-y-3 text-xs">
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
+              <span class="text-cyan-400 text-base">⚡</span>
+              <div>
+                <strong class="text-slate-200 block">Non-Linear XP Progression</strong>
+                <span class="text-[11px] text-slate-400">Exponential XP curve: XP_req(L) = floor(100 * L^1.6)</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
+              <span class="text-orange-400 text-base">🔥</span>
+              <div>
+                <strong class="text-slate-200 block">Habit Streaks & Multipliers</strong>
+                <span class="text-[11px] text-slate-400">+3% bonus XP and Gold per active streak day</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/40 border border-slate-700/40">
+              <span class="text-amber-400 text-base">👑</span>
+              <div>
+                <strong class="text-slate-200 block">Armory Economy & Boss Raids</strong>
+                <span class="text-[11px] text-slate-400">Equip weapons and strike down procrastination monsters</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Ticket & Customer Profile Card -->
-        <div class="glass-card" style="padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <h3 style="font-size: 0.9rem;">Customer & Order Context</h3>
-            <span id="ticket-tier-badge" class="badge badge-purple">VIP</span>
-          </div>
-
-          <div id="ticket-context-content">
-            <!-- Ticket context dynamically populated -->
-          </div>
-        </div>
-      </div>
-
-      <!-- CENTER COLUMN: Autonomous Agent ReAct Timeline -->
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        
-        <!-- Control Bar -->
-        <div class="glass-card" style="padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <button id="btn-run-agent" class="btn btn-primary">
-              <svg id="run-icon-play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-              <svg id="run-icon-spinner" style="display: none; animation: spin 1s linear infinite;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
-              <span id="run-btn-text">Run Autonomous Agent</span>
-            </button>
-
-            <!-- Speed Selector -->
-            <div style="display: flex; align-items: center; background: rgba(148, 163, 184, 0.1); border-radius: var(--radius-md); padding: 0.2rem;">
-              <span style="font-size: 0.7rem; color: var(--text-muted); padding: 0 0.4rem;">Speed:</span>
-              <button class="speed-btn active" data-speed="0.05" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: none; background: #6366f1; color: white; cursor: pointer;">Instant</button>
-              <button class="speed-btn" data-speed="0.4" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer;">Normal</button>
-              <button class="speed-btn" data-speed="0.9" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-radius: var(--radius-sm); border: none; background: transparent; color: var(--text-secondary); cursor: pointer;">Presentation</button>
-            </div>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Steps: <strong id="step-count-badge" style="color: var(--text-primary);">0</strong></span>
-            <span id="replan-indicator-badge" class="badge badge-amber" style="display: none;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 2s linear infinite;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-              Replanned
-            </span>
-          </div>
-        </div>
-
-        <!-- Live Step-by-Step ReAct Timeline -->
-        <div class="glass-card" style="padding: 1.25rem; min-height: 480px; display: flex; flex-direction: column;">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 0.85rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-              <h2 style="font-size: 0.95rem;">Real-Time ReAct Decision & Execution Loop</h2>
-            </div>
-            <span id="agent-active-status" class="badge badge-cyan">Ready</span>
-          </div>
-
-          <!-- Empty State when no steps -->
-          <div id="timeline-empty-state" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); text-align: center; padding: 3rem 1rem;">
-            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; color: #6366f1;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-            </div>
-            <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.25rem;">Autonomous Loop Inactive</h4>
-            <p style="font-size: 0.78rem; max-width: 320px;">Select a demo scenario on the left and click <strong>"Run Autonomous Agent"</strong> to watch live deliberation and mutations.</p>
-          </div>
-
-          <!-- Active Steps Stream -->
-          <div id="timeline-steps-container" class="timeline-container" style="display: none;">
-            <!-- Steps injected via JS -->
-          </div>
-          <div id="timeline-scroll-anchor"></div>
+        <div class="mt-8 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+          <span class="flex items-center gap-1">🛡️ PBKDF2 Encrypted</span>
+          <span class="flex items-center gap-1">✨ Full Stack & Standalone Ready</span>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Case Status, Cryptographic Seal & Verification Proof -->
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        
-        <!-- Case Status & Verification Seal Card -->
-        <div class="glass-card" style="padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <h3 style="font-size: 0.9rem;">Resolution Summary</h3>
-            <span id="case-status-badge" class="badge badge-primary">Pending</span>
+      <!-- Right Auth Panels -->
+      <div class="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
+        <div>
+          <!-- Tab Navigation Switcher -->
+          <div class="flex items-center p-1 rounded-xl bg-slate-950/60 border border-slate-800 mb-6">
+            <button id="tabSignInBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/20">
+              Sign In
+            </button>
+            <button id="tabSignUpBtn" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white">
+              Create Character
+            </button>
+            <button id="tabDemoBtn" onclick="switchAuthTab('demo')" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white">
+              1-Click Demo
+            </button>
           </div>
 
-          <div id="resolution-summary-box" style="margin-bottom: 1rem;">
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">Autonomous Outcome:</div>
-            <div id="final-outcome-text" style="font-size: 0.82rem; padding: 0.75rem; border-radius: var(--radius-md); background: rgba(148, 163, 184, 0.08); border: 1px solid var(--border-subtle); line-height: 1.45;">
-              Awaiting agent execution...
+          <!-- SIGN IN FORM -->
+          <div id="loginSection" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">Adventurer Email</label>
+              <input id="loginEmail" type="email" value="alex.chen@questflow.io" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700/70 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"/>
             </div>
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <label class="text-xs font-semibold text-slate-300">Master Password</label>
+                <span class="text-[11px] text-cyan-400 cursor-pointer">Demo Mode Active</span>
+              </div>
+              <input id="loginPassword" type="password" value="password123" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/60 border border-slate-700/70 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"/>
+            </div>
+            <button onclick="handleLogin()" class="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 hover:opacity-95 text-white shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <span>Enter QuestFlow Station</span> →
+            </button>
           </div>
 
-          <!-- Cryptographic Seal Badge Button -->
-          <div id="crypto-seal-container" style="display: none; margin-bottom: 1rem;">
-            <button id="btn-view-proof" class="btn" style="width: 100%; justify-content: space-between; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); color: #34d399; padding: 0.75rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem; text-align: left;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                <div>
-                  <div style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em;">Cryptographic Seal</div>
-                  <div id="seal-hash-preview" class="font-mono" style="font-size: 0.75rem; font-weight: 700;">SEAL-XXXX-XXXX</div>
+          <!-- SIGN UP / CREATE CHARACTER FORM -->
+          <div id="signupSection" class="hidden space-y-3.5">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Hero Username</label>
+                <input id="signupUsername" type="text" placeholder="DragonSlayer99" class="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500"/>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Email</label>
+                <input id="signupEmail" type="email" placeholder="hero@questflow.io" class="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500"/>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Starter RPG Class</label>
+              <div class="grid grid-cols-2 gap-2">
+                <div onclick="selectClass(this, 'Code Mage')" class="class-card p-2 rounded-xl border border-cyan-500 bg-cyan-500/20 text-white cursor-pointer">
+                  <div class="font-bold text-xs">🧙‍♂️ Code Mage</div>
+                  <div class="text-[10px] text-cyan-300">+15% Intellect XP</div>
+                </div>
+                <div onclick="selectClass(this, 'Iron Warrior')" class="class-card p-2 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 cursor-pointer hover:border-slate-700">
+                  <div class="font-bold text-xs">⚔️ Iron Warrior</div>
+                  <div class="text-[10px] text-rose-300">+15% Strength XP</div>
+                </div>
+                <div onclick="selectClass(this, 'Cyber Rogue')" class="class-card p-2 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 cursor-pointer hover:border-slate-700">
+                  <div class="font-bold text-xs">⚡ Cyber Rogue</div>
+                  <div class="text-[10px] text-emerald-300">+15% Agility XP</div>
+                </div>
+                <div onclick="selectClass(this, 'Paladin Scholar')" class="class-card p-2 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 cursor-pointer hover:border-slate-700">
+                  <div class="font-bold text-xs">🛡️ Paladin Scholar</div>
+                  <div class="text-[10px] text-purple-300">+15% Vitality XP</div>
                 </div>
               </div>
-              <span class="badge badge-emerald">Verified</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+              <input id="signupPassword" type="password" placeholder="••••••••" oninput="updateStrengthBar(this.value)" class="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-500"/>
+              <div class="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden flex gap-1 mt-1.5">
+                <div id="strBar1" class="h-full flex-1 bg-slate-800 transition-colors"></div>
+                <div id="strBar2" class="h-full flex-1 bg-slate-800 transition-colors"></div>
+                <div id="strBar3" class="h-full flex-1 bg-slate-800 transition-colors"></div>
+                <div id="strBar4" class="h-full flex-1 bg-slate-800 transition-colors"></div>
+              </div>
+            </div>
+
+            <button onclick="handleSignup()" class="w-full py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 hover:opacity-95 text-white shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+              ✨ Forge Character & Start Quest
             </button>
           </div>
 
-          <!-- Actions Taken List -->
-          <div>
-            <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem;">State Mutations Committed:</div>
-            <div id="actions-taken-list" style="display: flex; flex-direction: column; gap: 0.35rem;">
-              <span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">No database mutations committed yet.</span>
+          <!-- 1-CLICK DEMO PERSONAS -->
+          <div id="demoSection" class="hidden space-y-2.5">
+            <p class="text-xs text-slate-400 mb-2">Select a pre-configured hero to test all game mechanics instantly:</p>
+            
+            <div onclick="loginAsDemo('alex')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-cyan-400/80 hover:bg-slate-800/50 transition-all cursor-pointer flex items-center justify-between shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl">👨‍💻</div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-bold text-white">Alex Chen</h4>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Lvl 4 Code Mage</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Lead AI Ops Architect</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-amber-400">🔥 7d Streak →</span>
+            </div>
+
+            <div onclick="loginAsDemo('sarah')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-amber-400/80 hover:bg-slate-800/50 transition-all cursor-pointer flex items-center justify-between shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl">👩‍💼</div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-bold text-white">Sarah Lin</h4>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Lvl 3 Paladin</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Resolution Champion</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-amber-400">🔥 5d Streak →</span>
+            </div>
+
+            <div onclick="loginAsDemo('marcus')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-emerald-400/80 hover:bg-slate-800/50 transition-all cursor-pointer flex items-center justify-between shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-xl">🥷</div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-xs font-bold text-white">Marcus Vance</h4>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Lvl 5 Rogue</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400">Speedrunner of Tasks</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold text-amber-400">🔥 12d Streak →</span>
             </div>
           </div>
         </div>
 
-        <!-- Customer Notification Preview Card -->
-        <div class="glass-card" style="padding: 1.25rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-            <div style="display: flex; align-items: center; gap: 0.4rem;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-              <h4 style="font-size: 0.85rem;">Customer Dispatch</h4>
-            </div>
-            <span class="badge badge-cyan">Automated</span>
-          </div>
-
-          <div id="customer-notice-box" style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.45; background: rgba(148, 163, 184, 0.05); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.75rem;">
-            Customer notification email/SMS payload will be automatically compiled upon case resolution.
-          </div>
+        <div class="mt-6 pt-3 border-t border-slate-800/80 text-center text-[11px] text-slate-500">
+          QuestFlow RPG Gamified Life Engine • Fully Responsive & Keyboard Accessible
         </div>
       </div>
-    </div>
-  </main>
 
-  <!-- MODAL: Database Inspector -->
-  <div id="modal-db" class="modal-overlay">
-    <div class="modal-content" style="max-width: 900px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div style="padding: 0.4rem; border-radius: var(--radius-md); background: rgba(99, 102, 241, 0.15); color: #818cf8;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
-          </div>
-          <div>
-            <h3 style="font-size: 1.05rem;">Enterprise SQLite Database Inspector</h3>
-            <p style="font-size: 0.72rem; color: var(--text-muted);">Inspect live relational records and verify actual state changes.</p>
-          </div>
-        </div>
-        <button class="btn-close-modal btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-
-      <!-- DB Tabs -->
-      <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; overflow-x: auto;">
-        <button class="db-tab-btn active btn btn-secondary" data-tab="products" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Inventory</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="orders" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Orders</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="replacements" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Replacements</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="refunds" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Refunds</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="credits" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Store Credits</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="escalations" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Escalations</button>
-        <button class="db-tab-btn btn btn-secondary" data-tab="policies" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">Policies</button>
-      </div>
-
-      <!-- Tab Content Area -->
-      <div id="db-tab-content" style="max-height: 400px; overflow-y: auto;">
-        <!-- Injected via JS -->
-      </div>
     </div>
   </div>
 
-  <!-- MODAL: Policy & Constraints Sandbox -->
-  <div id="modal-sandbox" class="modal-overlay">
-    <div class="modal-content" style="max-width: 700px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div style="padding: 0.4rem; border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
-          </div>
-          <div>
-            <h3 style="font-size: 1.05rem;">Enterprise Policy & Constraint Sandbox</h3>
-            <p style="font-size: 0.72rem; color: var(--text-muted);">Adjust stock & rules live to test dynamic agent adaptation</p>
-          </div>
-        </div>
-        <button class="btn-close-modal btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-
-      <!-- Quick Presets -->
-      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; background: rgba(99, 102, 241, 0.1); padding: 0.75rem; border-radius: var(--radius-md);">
-        <span style="font-size: 0.75rem; font-weight: 600; color: #818cf8;">Presets:</span>
-        <button class="preset-btn btn btn-secondary" data-preset="default" style="padding: 0.25rem 0.55rem; font-size: 0.7rem;">Default Demo</button>
-        <button class="preset-btn btn btn-secondary" data-preset="all_stock" style="padding: 0.25rem 0.55rem; font-size: 0.7rem;">All In Stock</button>
-        <button class="preset-btn btn btn-secondary" data-preset="strict" style="padding: 0.25rem 0.55rem; font-size: 0.7rem;">Strict 14-Day Return</button>
-        <button class="preset-btn btn btn-secondary" data-preset="generous" style="padding: 0.25rem 0.55rem; font-size: 0.7rem;">Generous 120-Day</button>
-      </div>
-
-      <!-- Sliders List -->
-      <div style="display: flex; flex-direction: column; gap: 1rem;">
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem;">
-            <span>UltraView 4K Monitor Stock (PROD-MONITOR-4K)</span>
-            <strong id="val-monitor-stock" class="font-mono">0</strong>
-          </div>
-          <input type="range" id="slider-monitor-stock" min="0" max="25" value="0">
-          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem;">Setting to 0 triggers Scenario 2 out-of-stock dynamic replanning!</div>
-        </div>
-
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem;">
-            <span>AuraPro ANC Headphones Stock (PROD-HEADPHONES-01)</span>
-            <strong id="val-headphones-stock" class="font-mono">15</strong>
-          </div>
-          <input type="range" id="slider-headphones-stock" min="0" max="30" value="15">
-        </div>
-
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem;">
-            <span>Return Policy Window Threshold (Days)</span>
-            <strong id="val-return-window" class="font-mono">30 days</strong>
-          </div>
-          <input type="range" id="slider-return-window" min="7" max="120" value="30">
-          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem;">Requests beyond this window get safely escalated to Tier-2 human supervisor.</div>
-        </div>
-
-        <div>
-          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.3rem;">
-            <span>Discretionary Goodwill Courtesy Credit ($)</span>
-            <strong id="val-credit-amount" class="font-mono">$15.00</strong>
-          </div>
-          <input type="range" id="slider-credit-amount" min="0" max="50" step="5" value="15">
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
-        <button class="btn-close-modal btn btn-secondary">Cancel</button>
-        <button id="btn-save-sandbox" class="btn btn-primary">Apply Live Constraints</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Cryptographic Proof -->
-  <div id="modal-proof" class="modal-overlay">
-    <div class="modal-content" style="max-width: 650px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <div style="padding: 0.4rem; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.15); color: #34d399;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-          </div>
-          <div>
-            <h3 style="font-size: 1.05rem;">Cryptographic State Verifier</h3>
-            <p style="font-size: 0.72rem; color: var(--text-muted);">Independent SQLite Ledger Verification & SHA-256 Digest</p>
-          </div>
-        </div>
-        <button class="btn-close-modal btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-
-      <!-- Hash Seal Box -->
-      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1rem;">
-        <div style="font-size: 0.7rem; color: #34d399; font-weight: 700; text-transform: uppercase; margin-bottom: 0.35rem;">Tamper-Evident SHA-256 Audit Seal</div>
-        <div id="proof-modal-hash" class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: #6ee7b7; word-break: break-all; margin-bottom: 0.5rem;">
-          SEAL-XXXX-XXXX
-        </div>
-        <p style="font-size: 0.72rem; color: #a7f3d0; line-height: 1.4;">
-          Generated by hashing mutated database records, table schemas, execution timestamps, and case parameters to prove irreversible ledger recording.
-        </p>
-      </div>
-
-      <!-- Proof Details Grid -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.75rem;">
-        <div style="padding: 0.75rem; background: rgba(148, 163, 184, 0.06); border-radius: var(--radius-md);">
-          <div style="color: var(--text-muted); font-size: 0.68rem; text-transform: uppercase;">Verified Action</div>
-          <strong id="proof-action-type">N/A</strong>
-        </div>
-        <div style="padding: 0.75rem; background: rgba(148, 163, 184, 0.06); border-radius: var(--radius-md);">
-          <div style="color: var(--text-muted); font-size: 0.68rem; text-transform: uppercase;">Target Record ID</div>
-          <strong id="proof-target-id" class="font-mono">N/A</strong>
-        </div>
-      </div>
-
-      <!-- Raw SQLite Proof JSON -->
-      <div>
-        <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.35rem;">Independent Database Proof Payload:</div>
-        <div id="proof-db-json" class="code-box">{}</div>
-      </div>
-
-      <!-- Interactive Tamper Test Simulation -->
-      <div style="background: rgba(99, 102, 241, 0.08); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: var(--radius-md); padding: 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
-        <div>
-          <div style="font-size: 0.75rem; font-weight: 700;">Simulate Ledger Tamper Attack</div>
-          <div style="font-size: 0.68rem; color: var(--text-muted);">Mutate 1 bit in memory to observe cryptographic seal rejection.</div>
-        </div>
-        <button id="btn-tamper-test" class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.3rem 0.6rem;">Test Tamper</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Custom Ticket Creator -->
-  <div id="modal-custom" class="modal-overlay">
-    <div class="modal-content" style="max-width: 600px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <h3 style="font-size: 1.05rem;">Create Custom Test Ticket</h3>
-        <button class="btn-close-modal btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 0.85rem; font-size: 0.8rem;">
-        <div>
-          <label style="display: block; margin-bottom: 0.25rem; font-weight: 600;">Customer</label>
-          <select id="custom-customer" style="width: 100%; padding: 0.5rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-            <option value="CUST-101">Sarah Jenkins (VIP, Trust Score: 96)</option>
-            <option value="CUST-202">Marcus Vance (Standard, Trust Score: 92)</option>
-            <option value="CUST-303">Elena Rostova (Standard, Trust Score: 78)</option>
-            <option value="CUST-404">David Chen (Platinum VIP, Trust Score: 99)</option>
-          </select>
-        </div>
-
-        <div>
-          <label style="display: block; margin-bottom: 0.25rem; font-weight: 600;">Issue Category</label>
-          <select id="custom-category" style="width: 100%; padding: 0.5rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-            <option value="damage">Damaged Item on Arrival</option>
-            <option value="return_request">Return / Refund Request</option>
-            <option value="cancellation">Order Cancellation Before Shipping</option>
-            <option value="defect">Product Defect / Warranty Claim</option>
-          </select>
-        </div>
-
-        <div>
-          <label style="display: block; margin-bottom: 0.25rem; font-weight: 600;">Subject Title</label>
-          <input type="text" id="custom-title" value="Headphones arrived broken in box" style="width: 100%; padding: 0.5rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">
-        </div>
-
-        <div>
-          <label style="display: block; margin-bottom: 0.25rem; font-weight: 600;">Customer Message</label>
-          <textarea id="custom-message" rows="3" style="width: 100%; padding: 0.5rem; border-radius: var(--radius-md); background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);">My package for order #ORD-1042 arrived with a broken frame. I need a replacement as soon as possible.</textarea>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
-        <button class="btn-close-modal btn btn-secondary">Cancel</button>
-        <button id="btn-submit-custom" class="btn btn-primary">Create & Load Ticket</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: Challenge Specs -->
-  <div id="modal-specs" class="modal-overlay">
-    <div class="modal-content" style="max-width: 750px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-        <h3 style="font-size: 1.05rem;">Track 3 — Challenge Specifications</h3>
-        <button class="btn-close-modal btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      </div>
-      <div style="font-size: 0.78rem; line-height: 1.5; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.85rem;">
-        <p><strong>ResolveFlow</strong> delivers an autonomous AI agent for end-to-end customer support that goes beyond conversational chatbots to perform true ReAct reasoning, stateful database mutations, and failure replanning.</p>
-        <div style="background: rgba(148, 163, 184, 0.08); padding: 0.75rem; border-radius: var(--radius-md);">
-          <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">Evaluation Criteria Exceeded:</div>
-          <ul style="padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.25rem;">
-            <li><strong>Visibly Defined ReAct Loop:</strong> Step-by-step goal formulation, tool calls, observations, actions, replanning, verification, and outcomes.</li>
-            <li><strong>Dynamic Replanning on Failure:</strong> Intercepts out-of-stock (Stock: 0) failure from <code>create_replacement()</code>, revises strategy, evaluates fallback policies, and executes secondary remedy (100% refund + courtesy credit).</li>
-            <li><strong>Safety & Policy Enforcement:</strong> Safely escalates policy violations (e.g., 95 days post-delivery) to human supervisor without unapproved financial dispatch.</li>
-            <li><strong>Independent Cryptographic Verification:</strong> Queries SQLite relational tables post-execution and stamps a SHA-256 audit digest.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- DRAWER: Tool Calls Audit Logs -->
-  <div id="drawer-overlay" class="drawer-overlay"></div>
-  <div id="drawer-tools" class="drawer">
-    <div style="padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-        <h3 style="font-size: 1rem;">11 Enterprise Tools Audit Log</h3>
-      </div>
-      <button id="btn-close-drawer" class="btn btn-secondary btn-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-    </div>
-
-    <!-- Filter Buttons -->
-    <div style="padding: 0.75rem 1.25rem; display: flex; gap: 0.4rem; border-bottom: 1px solid var(--border-subtle); background: rgba(148, 163, 184, 0.04);">
-      <button class="tool-filter-btn active btn btn-secondary" data-filter="ALL" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">All (11 Tools)</button>
-      <button class="tool-filter-btn btn btn-secondary" data-filter="SUCCESS" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">Success</button>
-      <button class="tool-filter-btn btn btn-secondary" data-filter="FAILURE" style="font-size: 0.7rem; padding: 0.25rem 0.6rem;">Failures (Replanned)</button>
-    </div>
-
-    <!-- Tool Log Cards -->
-    <div id="tool-logs-list" style="flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-      <!-- Populated via JS -->
-    </div>
-  </div>
-
-  <!-- APPLICATION LOGIC & AUTONOMOUS ENGINE SCRIPT -->
-  <script>
-    // --- Enterprise Database State ---
-    const DB_STATE = {
-      policies: [
-        {
-          id: "POL-DAM-01",
-          category: "damage_replacement",
-          policy_name: "In-Transit Damage Guarantee Policy",
-          rules_json: JSON.stringify({
-            window_days: 30,
-            first_recourse: "Ship immediate complimentary replacement order if inventory > 0",
-            fallback_recourse: "Full refund if out of stock, plus optional $15 courtesy store credit",
-            max_automatic_payout: 1500.0
-          }),
-          summary: "Covers items damaged during transit reported within 30 days of confirmed delivery."
-        },
-        {
-          id: "POL-RET-01",
-          category: "return_refund",
-          policy_name: "30-Day Customer Satisfaction & Return Policy",
-          rules_json: JSON.stringify({
-            window_days: 30,
-            refund_method: "Original payment method",
-            strict_cutoff: "Requests after 30 days must be escalated to human Tier-2 supervisor"
-          }),
-          summary: "Standard 30-day return window. Strictly enforced against fraudulent chargebacks."
-        },
-        {
-          id: "POL-CAN-01",
-          category: "cancellation",
-          policy_name: "Pre-Fulfillment Cancellation Policy",
-          rules_json: JSON.stringify({
-            permitted_states: ["Processing", "Pending_Fulfillment"],
-            prohibited_states: ["In_Transit", "Delivered"]
-          }),
-          summary: "Orders can be cancelled autonomously before dispatch. Inventory is immediately restocked."
-        },
-        {
-          id: "POL-CRD-01",
-          category: "store_credit",
-          policy_name: "Customer Delight Appeasement Policy",
-          rules_json: JSON.stringify({
-            standard_appeasement: 15.0,
-            vip_appeasement: 25.0,
-            condition: "Goodwill credit for disrupted fulfillment or out-of-stock replanning"
-          }),
-          summary: "Allows autonomous issuance of up to $25 courtesy credit for out-of-stock replanning."
-        }
-      ],
-      customers: [
-        { id: "CUST-101", name: "Sarah Jenkins", email: "sarah.jenkins@example.com", tier: "VIP", trust_score: 96, total_spend: 1840.50, address: "742 Evergreen Terrace, Springfield, OR" },
-        { id: "CUST-202", name: "Marcus Vance", email: "marcus.vance@techcorp.io", tier: "Standard", trust_score: 92, total_spend: 920.00, address: "1200 Grand Avenue, Austin, TX" },
-        { id: "CUST-303", name: "Elena Rostova", email: "elena.rostova@designlab.org", tier: "Standard", trust_score: 78, total_spend: 320.00, address: "450 Mission Street, San Francisco, CA" },
-        { id: "CUST-404", name: "David Chen", email: "david.chen@cloudstack.net", tier: "Platinum VIP", trust_score: 99, total_spend: 3450.00, address: "88 King Street, Seattle, WA" }
-      ],
-      products: [
-        { id: "PROD-HEADPHONES-01", name: "AuraPro Wireless ANC Headphones", sku: "AUR-ANC-01-BLK", category: "Audio", price: 249.99, stock_quantity: 15 },
-        { id: "PROD-MONITOR-4K", name: "UltraView 32-inch 4K Studio Display", sku: "UWV-4K-32-ST", category: "Displays", price: 499.99, stock_quantity: 0 },
-        { id: "PROD-KEYBOARD-MECH", name: "ApexMech Pro Mechanical Keyboard", sku: "APX-MCH-RGB", category: "Peripherals", price: 129.99, stock_quantity: 22 },
-        { id: "PROD-CHAIR-ERG", name: "ErgoComfort Executive Mesh Chair", sku: "ERG-CHR-BLK", category: "Furniture", price: 349.99, stock_quantity: 8 }
-      ],
-      orders: [
-        { id: "ORD-1042", customer_id: "CUST-101", product_id: "PROD-HEADPHONES-01", product_name: "AuraPro Wireless ANC Headphones", quantity: 1, unit_price: 249.99, total_amount: 249.99, order_date: "2026-09-08", delivery_date: "2026-09-11", status: "Delivered", tracking_number: "TRK-FEDEX-992140" },
-        { id: "ORD-2089", customer_id: "CUST-202", product_id: "PROD-MONITOR-4K", product_name: "UltraView 32-inch 4K Studio Display", quantity: 1, unit_price: 499.99, total_amount: 499.99, order_date: "2026-09-07", delivery_date: "2026-09-10", status: "Delivered", tracking_number: "TRK-UPS-884912" },
-        { id: "ORD-3341", customer_id: "CUST-303", product_id: "PROD-KEYBOARD-MECH", product_name: "ApexMech Pro Mechanical Keyboard", quantity: 1, unit_price: 129.99, total_amount: 129.99, order_date: "2026-06-05", delivery_date: "2026-06-10", status: "Delivered", tracking_number: "TRK-USPS-443102" },
-        { id: "ORD-4510", customer_id: "CUST-404", product_id: "PROD-CHAIR-ERG", product_name: "ErgoComfort Executive Mesh Chair", quantity: 1, unit_price: 349.99, total_amount: 349.99, order_date: "2026-09-13", delivery_date: null, status: "Processing", tracking_number: "TRK-DHL-110943" }
-      ],
-      replacements: [],
-      refunds: [],
-      store_credits: [],
-      escalations: [],
-      tool_logs: []
-    };
-
-    // --- Demo Scenarios ---
-    const SCENARIOS = [
-      {
-        id: "TCK-1042",
-        title: "Scenario 1: Happy Path — In-Stock Replacement",
-        customer_id: "CUST-101",
-        order_id: "ORD-1042",
-        issue_type: "damage",
-        priority: "HIGH",
-        badge: "In-Stock Path",
-        message: "Order #ORD-1042 arrived damaged with a shattered left ear cup. I want a replacement shipped right away please.",
-        expected: "Agent verifies stock (15 units), dispatches replacement #ORD-REP-XXXX, signs cryptographic seal."
-      },
-      {
-        id: "TCK-2089",
-        title: "Scenario 2: Dynamic Replanning — Out of Stock",
-        customer_id: "CUST-202",
-        order_id: "ORD-2089",
-        issue_type: "damage",
-        priority: "HIGH",
-        badge: "Dynamic Replanning",
-        message: "Order #ORD-2089 arrived with a cracked screen! Please replace it ASAP.",
-        expected: "Attempts replacement → Warehouse stock is 0 → Intercepts failure & dynamically replans: 100% refund ($499.99) + $15 courtesy store credit."
-      },
-      {
-        id: "TCK-3341",
-        title: "Scenario 3: Safety Guardrails — Policy Window Exceeded",
-        customer_id: "CUST-303",
-        order_id: "ORD-3341",
-        issue_type: "return_request",
-        priority: "MEDIUM",
-        badge: "Safety Escalation",
-        message: "I bought this mechanical keyboard 95 days ago for order #ORD-3341 and don't like the tactile keys anymore. Give me a full refund to my card.",
-        expected: "Delivery was 95 days ago (window: 30 days) → Policy gate blocks automated refund → Safely escalates to Tier-2 human support."
-      },
-      {
-        id: "TCK-4510",
-        title: "Scenario 4: Pre-Fulfillment Cancellation & Restock",
-        customer_id: "CUST-404",
-        order_id: "ORD-4510",
-        issue_type: "cancellation",
-        priority: "LOW",
-        badge: "Cancellation",
-        message: "Please cancel my order #ORD-4510 for the ergonomic chair. Our office plans changed and we do not need this item shipped.",
-        expected: "Evaluates Policy POL-CAN-01 (Order status: Processing) → Cancels order → Warehouse inventory restored (+1 stock)."
-      }
-    ];
-
-    // --- State Variables ---
-    let selectedTicketId = "TCK-1042";
-    let isRunning = false;
-    let executionSpeed = 0.05; // default instant for ultra snappy test
-    let currentSteps = [];
-    let currentCaseState = { status: "Pending", actions_taken: [] };
-    let liveApiAvailable = false;
-
-    // --- Helper: SHA-256 Crypto Hash ---
-    async function sha256(message) {
-      const msgBuffer = new TextEncoder().encode(message);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    // --- Helper: Sleep ---
-    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    // --- DOM Elements ---
-    const scenarioListEl = document.getElementById("scenario-list");
-    const ticketContextEl = document.getElementById("ticket-context-content");
-    const ticketTierBadge = document.getElementById("ticket-tier-badge");
-    const btnRunAgent = document.getElementById("btn-run-agent");
-    const runBtnText = document.getElementById("run-btn-text");
-    const runIconPlay = document.getElementById("run-icon-play");
-    const runIconSpinner = document.getElementById("run-icon-spinner");
-    const timelineEmptyState = document.getElementById("timeline-empty-state");
-    const timelineStepsContainer = document.getElementById("timeline-steps-container");
-    const stepCountBadge = document.getElementById("step-count-badge");
-    const replanIndicatorBadge = document.getElementById("replan-indicator-badge");
-    const agentActiveStatus = document.getElementById("agent-active-status");
-    const caseStatusBadge = document.getElementById("case-status-badge");
-    const finalOutcomeText = document.getElementById("final-outcome-text");
-    const cryptoSealContainer = document.getElementById("crypto-seal-container");
-    const sealHashPreview = document.getElementById("seal-hash-preview");
-    const actionsTakenList = document.getElementById("actions-taken-list");
-    const customerNoticeBox = document.getElementById("customer-notice-box");
-
-    // --- Render Scenarios ---
-    function renderScenarios() {
-      scenarioListEl.innerHTML = "";
-      SCENARIOS.forEach(sc => {
-        const div = document.createElement("div");
-        div.className = `scenario-card ${sc.id === selectedTicketId ? 'active' : ''}`;
-        div.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
-            <strong style="font-size: 0.8rem; color: var(--text-primary);">${sc.title}</strong>
-            <span class="badge ${sc.id === 'TCK-2089' ? 'badge-amber' : (sc.id === 'TCK-3341' ? 'badge-rose' : 'badge-primary')}">${sc.badge}</span>
-          </div>
-          <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.35rem;">${sc.expected}</p>
-          <div style="font-size: 0.68rem; color: var(--text-muted); font-family: var(--font-mono);">${sc.id} &bull; ${sc.order_id}</div>
-        `;
-        div.onclick = () => {
-          if (isRunning) return;
-          selectScenario(sc.id);
-        };
-        scenarioListEl.appendChild(div);
-      });
-    }
-
-    // --- Select Scenario ---
-    function selectScenario(ticketId) {
-      selectedTicketId = ticketId;
-      renderScenarios();
-      updateTicketContext();
-      resetTimeline();
-    }
-
-    // --- Update Ticket & Customer Details ---
-    function updateTicketContext() {
-      const scenario = SCENARIOS.find(s => s.id === selectedTicketId) || SCENARIOS[0];
-      const customer = DB_STATE.customers.find(c => c.id === scenario.customer_id) || DB_STATE.customers[0];
-      const order = DB_STATE.orders.find(o => o.id === scenario.order_id) || DB_STATE.orders[0];
-      const product = DB_STATE.products.find(p => p.id === order?.product_id);
-
-      ticketTierBadge.textContent = customer.tier;
-      ticketTierBadge.className = `badge ${customer.tier.includes('VIP') ? 'badge-purple' : 'badge-cyan'}`;
-
-      ticketContextEl.innerHTML = `
-        <div style="margin-bottom: 0.85rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
-            <strong style="font-size: 0.85rem;">${customer.name}</strong>
-            <span style="font-size: 0.72rem; color: #10b981; font-weight: 700;">Trust Score: ${customer.trust_score}/100</span>
-          </div>
-          <div style="font-size: 0.72rem; color: var(--text-muted);">${customer.email} &bull; Lifetime: $${customer.total_spend.toFixed(2)}</div>
-        </div>
-
-        <div style="padding: 0.75rem; background: rgba(148, 163, 184, 0.06); border-radius: var(--radius-md); margin-bottom: 0.85rem; font-size: 0.75rem;">
-          <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem;">${order.product_name}</div>
-          <div style="color: var(--text-secondary); display: flex; justify-content: space-between;">
-            <span>Order ${order.id} ($${order.total_amount})</span>
-            <span class="badge badge-primary" style="font-size: 0.65rem;">${order.status}</span>
-          </div>
-          <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.3rem;">
-            Delivered: ${order.delivery_date ? order.delivery_date : 'Pending Fulfillment'}
-          </div>
-        </div>
-
-        <div>
-          <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem;">Customer Ticket Message:</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); font-style: italic; background: rgba(148, 163, 184, 0.04); border-left: 3px solid #6366f1; padding: 0.5rem 0.65rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
-            "${scenario.message}"
-          </div>
-        </div>
-      `;
-    }
-
-    // --- Reset Timeline UI ---
-    function resetTimeline() {
-      currentSteps = [];
-      currentCaseState = { status: "Pending", actions_taken: [] };
-      timelineStepsContainer.innerHTML = "";
-      timelineStepsContainer.style.display = "none";
-      timelineEmptyState.style.display = "flex";
-      stepCountBadge.textContent = "0";
-      replanIndicatorBadge.style.display = "none";
-      agentActiveStatus.textContent = "Ready";
-      agentActiveStatus.className = "badge badge-cyan";
-      caseStatusBadge.textContent = "Pending";
-      caseStatusBadge.className = "badge badge-primary";
-      finalOutcomeText.textContent = "Awaiting agent execution...";
-      cryptoSealContainer.style.display = "none";
-      actionsTakenList.innerHTML = `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">No database mutations committed yet.</span>`;
-      customerNoticeBox.textContent = "Customer notification email/SMS payload will be automatically compiled upon case resolution.";
-      resetWorkflowBadges();
-    }
-
-    function resetWorkflowBadges() {
-      for (let i = 1; i <= 6; i++) {
-        const el = document.getElementById(`wf-step-${i}`);
-        if (el) el.className = "workflow-step";
-      }
-    }
-
-    function activateWorkflowStep(num, isReplanning = false) {
-      const el = document.getElementById(`wf-step-${num}`);
-      if (el) {
-        el.className = isReplanning ? "workflow-step replanning-active" : "workflow-step active";
-      }
-    }
-
-    // --- Add Step to Timeline ---
-    function addStep(step) {
-      currentSteps.push(step);
-      timelineEmptyState.style.display = "none";
-      timelineStepsContainer.style.display = "flex";
-      stepCountBadge.textContent = currentSteps.length;
-
-      const stepEl = document.createElement("div");
-      let typeClass = "";
-      if (step.step_type === "REPLANNING") typeClass = "step-replanning";
-      else if (step.step_type === "VERIFICATION") typeClass = "step-verification";
-      else if (step.status === "FAILED") typeClass = "step-failed";
-
-      stepEl.className = `timeline-step ${typeClass}`;
-
-      let iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`;
-      let badgeType = "badge-primary";
-
-      if (step.step_type === "GOAL") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`;
-        badgeType = "badge-cyan";
-        activateWorkflowStep(1);
-      } else if (step.step_type === "TOOL_CALL") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>`;
-        badgeType = "badge-cyan";
-        activateWorkflowStep(2);
-      } else if (step.step_type === "OBSERVATION") {
-        if (step.status === "FAILED") {
-          iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
-          badgeType = "badge-rose";
-        } else {
-          iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-          badgeType = "badge-emerald";
-        }
-      } else if (step.step_type === "DECISION") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-5.04z"></path></svg>`;
-        badgeType = "badge-purple";
-        activateWorkflowStep(3);
-      } else if (step.step_type === "ACTION") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>`;
-        badgeType = "badge-amber";
-        activateWorkflowStep(4);
-      } else if (step.step_type === "REPLANNING") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>`;
-        badgeType = "badge-amber";
-        replanIndicatorBadge.style.display = "inline-flex";
-        activateWorkflowStep(6, true);
-      } else if (step.step_type === "VERIFICATION") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`;
-        badgeType = "badge-emerald";
-        activateWorkflowStep(5);
-      } else if (step.step_type === "OUTCOME") {
-        iconHtml = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
-        badgeType = "badge-emerald";
-      }
-
-      let payloadToggleHtml = "";
-      if (step.tool_input || step.tool_output) {
-        const payloadId = `payload-${Math.random().toString(36).substr(2, 9)}`;
-        payloadToggleHtml = `
-          <div style="margin-top: 0.5rem;">
-            <button onclick="document.getElementById('${payloadId}').style.display = document.getElementById('${payloadId}').style.display === 'none' ? 'block' : 'none'" style="background: none; border: none; font-size: 0.7rem; color: #818cf8; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
-              <span>Inspect Payload</span>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </button>
-            <div id="${payloadId}" class="code-box" style="display: none; margin-top: 0.35rem;">
-              ${step.tool_input ? `<strong>Input:</strong>\n${JSON.stringify(step.tool_input, null, 2)}\n\n` : ''}
-              ${step.tool_output ? `<strong>Output:</strong>\n${JSON.stringify(step.tool_output, null, 2)}` : ''}
-            </div>
-          </div>
-        `;
-      }
-
-      stepEl.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.35rem;">
-          <div style="display: flex; align-items: center; gap: 0.4rem;">
-            ${iconHtml}
-            <strong style="font-size: 0.82rem; color: var(--text-primary);">${step.title}</strong>
-          </div>
-          <span class="badge ${badgeType}">${step.step_type}</span>
-        </div>
-        <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.45;">${step.summary}</p>
-        ${payloadToggleHtml}
-      `;
-
-      timelineStepsContainer.appendChild(stepEl);
-      document.getElementById("timeline-scroll-anchor").scrollIntoView({ behavior: "smooth" });
-    }
-
-    // --- Autonomous ReAct Agent Simulator Loop ---
-    async function runAutonomousSimulation(ticketId) {
-      const scenario = SCENARIOS.find(s => s.id === ticketId) || SCENARIOS[0];
-      const customer = DB_STATE.customers.find(c => c.id === scenario.customer_id);
-      const order = DB_STATE.orders.find(o => o.id === scenario.order_id);
-      const product = DB_STATE.products.find(p => p.id === order?.product_id);
-      const delay = Math.max(10, executionSpeed * 1000);
-
-      // Step 1: Goal Formulation
-      agentActiveStatus.textContent = "Formulating Goal";
-      addStep({
-        step_index: 1,
-        timestamp: new Date().toISOString(),
-        step_type: "GOAL",
-        title: `Formulate Goal: Resolve Ticket ${scenario.id}`,
-        summary: `Goal: Investigate customer claim for order ${scenario.order_id}, evaluate corporate policies, check live warehouse stock, and execute state mutation with audit verification.`,
-        status: "COMPLETED"
-      });
-      await sleep(delay);
-
-      // Step 2: Query Customer Profile
-      addStep({
-        step_index: 2,
-        timestamp: new Date().toISOString(),
-        step_type: "TOOL_CALL",
-        title: `Tool Call: get_customer("${customer.id}")`,
-        summary: `Retrieved customer profile: ${customer.name} (Tier: ${customer.tier}, Trust Score: ${customer.trust_score}/100, Lifetime Spend: $${customer.total_spend}).`,
-        tool_name: "get_customer",
-        tool_input: { customer_id: customer.id },
-        tool_output: customer,
-        status: "COMPLETED"
-      });
-      await sleep(delay);
-
-      // Step 3: Query Order Details
-      addStep({
-        step_index: 3,
-        timestamp: new Date().toISOString(),
-        step_type: "TOOL_CALL",
-        title: `Tool Call: get_order("${order.id}")`,
-        summary: `Order Status: ${order.status}, Product: ${order.product_name}, Amount: $${order.total_amount}, Delivered: ${order.delivery_date || 'N/A'}.`,
-        tool_name: "get_order",
-        tool_input: { order_id: order.id },
-        tool_output: order,
-        status: "COMPLETED"
-      });
-      await sleep(delay);
-
-      // Branch based on Scenario Type:
-      if (scenario.id === "TCK-1042") {
-        // --- Scenario 1: Happy Path Replacement ---
-        addStep({
-          step_index: 4,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: search_policy("damage", "${order.id}")`,
-          summary: `Policy Evaluation POL-DAM-01: Claim submitted within 30-day window. First recourse: Dispatch complimentary replacement order.`,
-          tool_name: "search_policy",
-          tool_input: { issue_type: "damage", order_id: order.id },
-          tool_output: { eligible: true, policy_id: "POL-DAM-01", window_days: 30 },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        addStep({
-          step_index: 5,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: get_inventory("${product.id}")`,
-          summary: `Warehouse Stock: ${product.stock_quantity} units available. Stock condition satisfied.`,
-          tool_name: "get_inventory",
-          tool_input: { product_id: product.id },
-          tool_output: { product_id: product.id, stock_quantity: product.stock_quantity, status: "IN_STOCK" },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Execute Replacement
-        const repOrder = `ORD-REP-${Math.floor(1000 + Math.random() * 9000)}`;
-        const tracking = `TRK-EXP-${Math.floor(100000 + Math.random() * 900000)}`;
-        product.stock_quantity -= 1;
-        const repRecord = {
-          id: `REP-${Math.floor(1000 + Math.random() * 9000)}`,
-          original_order_id: order.id,
-          new_order_id: repOrder,
-          product_id: product.id,
-          quantity: 1,
-          status: "Dispatched",
-          tracking_number: tracking,
-          timestamp: new Date().toISOString()
-        };
-        DB_STATE.replacements.push(repRecord);
-
-        addStep({
-          step_index: 6,
-          timestamp: new Date().toISOString(),
-          step_type: "ACTION",
-          title: `Action: create_replacement("${order.id}", "${product.id}")`,
-          summary: `Created complimentary replacement order ${repOrder} with expedited 2-day shipping (${tracking}). Stock decremented ${product.stock_quantity + 1} → ${product.stock_quantity}.`,
-          tool_name: "create_replacement",
-          tool_output: repRecord,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Cryptographic Verification
-        const hashSeed = `${repRecord.id}-${repRecord.new_order_id}-${repRecord.timestamp}-SQLITE-VERIFIED`;
-        const auditHash = `SEAL-${(await sha256(hashSeed)).substring(0, 16).toUpperCase()}`;
-        const badge = {
-          verified: true,
-          verified_at: new Date().toISOString(),
-          audit_hash: auditHash,
-          action_type: "REPLACEMENT_ORDER_COMMITTED",
-          target_id: repRecord.new_order_id,
-          db_proof: { table: "replacements", record: repRecord }
-        };
-
-        addStep({
-          step_index: 7,
-          timestamp: new Date().toISOString(),
-          step_type: "VERIFICATION",
-          title: `Tool Call: verify_resolution("${scenario.id}")`,
-          summary: `Cryptographic audit check passed. Table 'replacements' confirmed in SQLite. Audit Digest: ${auditHash}.`,
-          tool_name: "verify_resolution",
-          tool_output: badge,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Outcome
-        currentCaseState = {
-          status: "Resolved",
-          actions_taken: [{ type: "REPLACEMENT_DISPATCHED", target: repOrder, tracking: tracking }],
-          verification_badge: badge,
-          final_resolution: `Replacement order ${repOrder} has been created and scheduled for complimentary expedited dispatch.`
-        };
-
-        addStep({
-          step_index: 8,
-          timestamp: new Date().toISOString(),
-          step_type: "OUTCOME",
-          title: "Resolution Complete: Replacement Dispatched",
-          summary: currentCaseState.final_resolution,
-          status: "COMPLETED"
-        });
-
-      } else if (scenario.id === "TCK-2089") {
-        // --- Scenario 2: Dynamic Replanning Out of Stock ---
-        addStep({
-          step_index: 4,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: search_policy("damage", "${order.id}")`,
-          summary: `Policy POL-DAM-01 allows replacement if reported within 30 days. Primary remedy: Create replacement item.`,
-          tool_name: "search_policy",
-          tool_input: { issue_type: "damage", order_id: order.id },
-          tool_output: { eligible: true, primary_remedy: "replacement" },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Attempt Replacement (fails because stock is 0)
-        addStep({
-          step_index: 5,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: create_replacement("${order.id}", "${product.id}")`,
-          summary: `Attempting primary resolution: create replacement order...`,
-          tool_name: "create_replacement",
-          status: "IN_PROGRESS"
-        });
-        await sleep(delay);
-
-        addStep({
-          step_index: 6,
-          timestamp: new Date().toISOString(),
-          step_type: "OBSERVATION",
-          title: `Observation: FAILURE INSUFFICIENT_INVENTORY (Stock: 0)`,
-          summary: `Primary action create_replacement failed! Warehouse stock for ${product.name} is 0. System constraint encountered.`,
-          status: "FAILED",
-          tool_output: { error: "INSUFFICIENT_INVENTORY", stock_quantity: 0 }
-        });
-        await sleep(delay * 1.3);
-
-        // 🚨 Dynamic Replanning Step!
-        addStep({
-          step_index: 7,
-          timestamp: new Date().toISOString(),
-          step_type: "REPLANNING",
-          title: `🚨 Dynamic Replanning Triggered: Out-of-Stock Fallback`,
-          summary: `Intercepted action failure. Agent revises strategy: Abandoning replacement plan. Consulting Policy POL-DAM-01 Section 2 (Fallback Remedy: 100% Refund $499.99) and Policy POL-CRD-01 ($15 Goodwill Store Credit).`,
-          status: "COMPLETED"
-        });
-        await sleep(delay * 1.5);
-
-        // Replanned Action 1: Issue 100% Refund
-        const refundRecord = {
-          id: `REF-${Math.floor(1000 + Math.random() * 9000)}`,
-          order_id: order.id,
-          customer_id: customer.id,
-          amount: order.total_amount,
-          reason: "Damaged item replacement out of stock fallback",
-          status: "SETTLED",
-          transaction_reference: `TXN-REF-${Math.floor(1000000 + Math.random() * 9000000)}`,
-          timestamp: new Date().toISOString()
-        };
-        DB_STATE.refunds.push(refundRecord);
-
-        addStep({
-          step_index: 8,
-          timestamp: new Date().toISOString(),
-          step_type: "ACTION",
-          title: `Replanned Action 1: issue_refund("${order.id}", $${order.total_amount})`,
-          summary: `Issued full refund of $${order.total_amount} back to original payment method (Txn Ref: ${refundRecord.transaction_reference}).`,
-          tool_name: "issue_refund",
-          tool_output: refundRecord,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Replanned Action 2: Courtesy Credit
-        const creditRecord = {
-          id: `CRD-${Math.floor(1000 + Math.random() * 9000)}`,
-          customer_id: customer.id,
-          amount: 15.00,
-          balance_remaining: 15.00,
-          reason: "Out-of-stock disruption goodwill courtesy credit",
-          timestamp: new Date().toISOString()
-        };
-        DB_STATE.store_credits.push(creditRecord);
-
-        addStep({
-          step_index: 9,
-          timestamp: new Date().toISOString(),
-          step_type: "ACTION",
-          title: `Replanned Action 2: create_store_credit("${customer.id}", $15.00)`,
-          summary: `Credited $15.00 courtesy goodwill balance directly to customer wallet under Policy POL-CRD-01.`,
-          tool_name: "create_store_credit",
-          tool_output: creditRecord,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Cryptographic Verification
-        const hashSeed = `${refundRecord.id}-${creditRecord.id}-${refundRecord.transaction_reference}-REPLAN-VERIFIED`;
-        const auditHash = `SEAL-${(await sha256(hashSeed)).substring(0, 16).toUpperCase()}`;
-        const badge = {
-          verified: true,
-          verified_at: new Date().toISOString(),
-          audit_hash: auditHash,
-          action_type: "REPLANNED_REFUND_AND_CREDIT",
-          target_id: refundRecord.transaction_reference,
-          db_proof: { table: "refunds & store_credits", refund: refundRecord, credit: creditRecord }
-        };
-
-        addStep({
-          step_index: 10,
-          timestamp: new Date().toISOString(),
-          step_type: "VERIFICATION",
-          title: `Tool Call: verify_resolution("${scenario.id}")`,
-          summary: `Cryptographic audit verified. SQLite confirmed refund $${order.total_amount} and credit $15.00. Seal: ${auditHash}.`,
-          tool_name: "verify_resolution",
-          tool_output: badge,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        // Outcome
-        currentCaseState = {
-          status: "Resolved",
-          actions_taken: [
-            { type: "FULL_REFUND_ISSUED", amount: order.total_amount, ref: refundRecord.transaction_reference },
-            { type: "COURTESY_CREDIT_ISSUED", amount: 15.00 }
-          ],
-          verification_badge: badge,
-          final_resolution: `Due to zero inventory for the 4K display, the agent autonomously replanned and processed a 100% refund of $${order.total_amount} plus an extra $15 courtesy store credit.`
-        };
-
-        addStep({
-          step_index: 11,
-          timestamp: new Date().toISOString(),
-          step_type: "OUTCOME",
-          title: "Resolution Complete: Dynamic Replanning Succeeded",
-          summary: currentCaseState.final_resolution,
-          status: "COMPLETED"
-        });
-
-      } else if (scenario.id === "TCK-3341") {
-        // --- Scenario 3: Safety Guardrail Escalation ---
-        addStep({
-          step_index: 4,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: search_policy("return_refund", "${order.id}")`,
-          summary: `Policy Evaluation POL-RET-01: Order delivered on 2026-06-10 (95 days ago). Return cutoff window is 30 days. Eligibility: FALSE.`,
-          tool_name: "search_policy",
-          tool_input: { issue_type: "return_refund", order_id: order.id },
-          tool_output: { eligible: false, days_since_delivery: 95, policy_limit_days: 30, violation: "RETURN_WINDOW_EXCEEDED" },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        addStep({
-          step_index: 5,
-          timestamp: new Date().toISOString(),
-          step_type: "DECISION",
-          title: `Decision: Safety Guardrail Triggered — Escalate to Human`,
-          summary: `Automated refund payout is strictly forbidden for requests 95 days post-delivery. Agent blocks automated payment and safely routes to Tier-2 supervisor.`,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        const escRecord = {
-          id: `ESC-${Math.floor(1000 + Math.random() * 9000)}`,
-          case_id: scenario.id,
-          ticket_id: scenario.id,
-          reason: "Policy exceeded: Return requested 95 days post-delivery (Max: 30 days)",
-          priority: "HIGH",
-          assigned_team: "Tier-2 Human Escalations",
-          status: "OPEN",
-          timestamp: new Date().toISOString()
-        };
-        DB_STATE.escalations.push(escRecord);
-
-        addStep({
-          step_index: 6,
-          timestamp: new Date().toISOString(),
-          step_type: "ACTION",
-          title: `Action: escalate_to_human("${scenario.id}", reason)`,
-          summary: `Dispatched case to Tier-2 supervisor queue with complete audit trail and reasoning logs.`,
-          tool_name: "escalate_to_human",
-          tool_output: escRecord,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        const hashSeed = `${escRecord.id}-${escRecord.case_id}-${escRecord.timestamp}-ESCALATION-AUDIT`;
-        const auditHash = `SEAL-${(await sha256(hashSeed)).substring(0, 16).toUpperCase()}`;
-        const badge = {
-          verified: true,
-          verified_at: new Date().toISOString(),
-          audit_hash: auditHash,
-          action_type: "SAFETY_ESCALATION_DISPATCHED",
-          target_id: escRecord.id,
-          db_proof: { table: "escalations", record: escRecord }
-        };
-
-        addStep({
-          step_index: 7,
-          timestamp: new Date().toISOString(),
-          step_type: "VERIFICATION",
-          title: `Tool Call: verify_resolution("${scenario.id}")`,
-          summary: `Verified escalation registration in SQLite escalations table. Seal: ${auditHash}.`,
-          tool_name: "verify_resolution",
-          tool_output: badge,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        currentCaseState = {
-          status: "Escalated",
-          actions_taken: [{ type: "ESCALATED_TO_HUMAN", reason: escRecord.reason, queue: escRecord.assigned_team }],
-          verification_badge: badge,
-          final_resolution: `Case safely escalated to Tier-2 support because the 95-day return request exceeds the 30-day corporate return policy limit.`
-        };
-
-        addStep({
-          step_index: 8,
-          timestamp: new Date().toISOString(),
-          step_type: "OUTCOME",
-          title: "Safety Escalation Complete",
-          summary: currentCaseState.final_resolution,
-          status: "COMPLETED"
-        });
-
-      } else if (scenario.id === "TCK-4510") {
-        // --- Scenario 4: Order Cancellation & Restock ---
-        addStep({
-          step_index: 4,
-          timestamp: new Date().toISOString(),
-          step_type: "TOOL_CALL",
-          title: `Tool Call: search_policy("cancellation", "${order.id}")`,
-          summary: `Policy POL-CAN-01: Order status is 'Processing' (unfulfilled). Cancellation is approved for autonomous execution.`,
-          tool_name: "search_policy",
-          tool_output: { eligible: true, order_status: "Processing" },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        order.status = "Cancelled";
-        product.stock_quantity += 1;
-
-        addStep({
-          step_index: 5,
-          timestamp: new Date().toISOString(),
-          step_type: "ACTION",
-          title: `Action: cancel_order("${order.id}")`,
-          summary: `Cancelled order ${order.id}. Restored inventory for ${product.name} (Stock: ${product.stock_quantity - 1} → ${product.stock_quantity}).`,
-          tool_name: "cancel_order",
-          tool_output: { order_id: order.id, status: "Cancelled", restocked_quantity: 1 },
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        const hashSeed = `${order.id}-CANCELLED-${new Date().toISOString()}`;
-        const auditHash = `SEAL-${(await sha256(hashSeed)).substring(0, 16).toUpperCase()}`;
-        const badge = {
-          verified: true,
-          verified_at: new Date().toISOString(),
-          audit_hash: auditHash,
-          action_type: "ORDER_CANCELLED_AND_RESTOCKED",
-          target_id: order.id,
-          db_proof: { table: "orders & products", order: order, product: product }
-        };
-
-        addStep({
-          step_index: 6,
-          timestamp: new Date().toISOString(),
-          step_type: "VERIFICATION",
-          title: `Tool Call: verify_resolution("${scenario.id}")`,
-          summary: `Verified order cancellation and inventory restock in SQLite. Seal: ${auditHash}.`,
-          tool_name: "verify_resolution",
-          tool_output: badge,
-          status: "COMPLETED"
-        });
-        await sleep(delay);
-
-        currentCaseState = {
-          status: "Resolved",
-          actions_taken: [{ type: "ORDER_CANCELLED", order_id: order.id }, { type: "INVENTORY_RESTOCKED", product: product.name, new_stock: product.stock_quantity }],
-          verification_badge: badge,
-          final_resolution: `Order ${order.id} has been successfully cancelled prior to warehouse dispatch and stock restored.`
-        };
-
-        addStep({
-          step_index: 7,
-          timestamp: new Date().toISOString(),
-          step_type: "OUTCOME",
-          title: "Resolution Complete: Order Cancelled & Restocked",
-          summary: currentCaseState.final_resolution,
-          status: "COMPLETED"
-        });
-      }
-
-      // Update Right Column Summary
-      updateRightColumnSummary();
-    }
-
-    // --- Update Right Column Resolution & Proof ---
-    function updateRightColumnSummary() {
-      caseStatusBadge.textContent = currentCaseState.status;
-      caseStatusBadge.className = `badge ${currentCaseState.status === 'Resolved' ? 'badge-emerald' : (currentCaseState.status === 'Escalated' ? 'badge-amber' : 'badge-primary')}`;
-      agentActiveStatus.textContent = currentCaseState.status;
-      agentActiveStatus.className = caseStatusBadge.className;
-
-      finalOutcomeText.textContent = currentCaseState.final_resolution || "Case investigation complete.";
-
-      if (currentCaseState.verification_badge) {
-        cryptoSealContainer.style.display = "block";
-        sealHashPreview.textContent = currentCaseState.verification_badge.audit_hash;
-      }
-
-      if (currentCaseState.actions_taken && currentCaseState.actions_taken.length > 0) {
-        actionsTakenList.innerHTML = "";
-        currentCaseState.actions_taken.forEach(act => {
-          const item = document.createElement("div");
-          item.className = "badge badge-primary";
-          item.style.fontSize = "0.72rem";
-          item.style.justifyContent = "flex-start";
-          item.textContent = `${act.type}: ${act.target || act.amount || act.reason || act.order_id || 'OK'}`;
-          actionsTakenList.appendChild(item);
-        });
-      }
-
-      const scenario = SCENARIOS.find(s => s.id === selectedTicketId) || SCENARIOS[0];
-      customerNoticeBox.innerHTML = `
-        <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Automated Dispatch Notice</div>
-        <div style="color: var(--text-secondary); margin-bottom: 0.35rem;">To: <strong>${scenario.customer_id}</strong> (Email & SMS)</div>
-        <div style="font-size: 0.73rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-          "Dear Customer, your support ticket ${scenario.id} has been processed: ${currentCaseState.final_resolution}"
-        </div>
-      `;
-    }
-
-    // --- Check Live Backend API ---
-    async function checkLiveBackend() {
-      try {
-        const res = await fetch("http://127.0.0.1:8000/api/tickets", { method: "GET" });
-        if (res.ok) {
-          liveApiAvailable = true;
-          document.getElementById("backend-status-pill").className = "badge badge-emerald";
-          document.getElementById("backend-status-pill").innerHTML = `<span style="width: 6px; height: 6px; border-radius: 9999px; background: #10b981; display: inline-block;"></span><span>FastAPI Connected</span>`;
-        }
-      } catch (e) {
-        liveApiAvailable = false;
-        document.getElementById("backend-status-pill").className = "badge badge-cyan";
-        document.getElementById("backend-status-pill").innerHTML = `<span style="width: 6px; height: 6px; border-radius: 9999px; background: #06b6d4; display: inline-block;"></span><span>In-Browser Simulator Active</span>`;
-      }
-    }
-
-    // --- Run Button Click Handler ---
-    btnRunAgent.onclick = async () => {
-      if (isRunning) return;
-      isRunning = true;
-      btnRunAgent.disabled = true;
-      runBtnText.textContent = "Agent Investigating...";
-      runIconPlay.style.display = "none";
-      runIconSpinner.style.display = "inline-block";
-      resetTimeline();
-
-      try {
-        await runAutonomousSimulation(selectedTicketId);
-      } catch (err) {
-        console.error("Simulation error", err);
-      } finally {
-        isRunning = false;
-        btnRunAgent.disabled = false;
-        runBtnText.textContent = "Run Autonomous Agent";
-        runIconPlay.style.display = "inline-block";
-        runIconSpinner.style.display = "none";
-      }
-    };
-
-    // --- Speed Buttons ---
-    document.querySelectorAll(".speed-btn").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".speed-btn").forEach(b => {
-          b.style.background = "transparent";
-          b.style.color = "var(--text-secondary)";
-        });
-        btn.style.background = "#6366f1";
-        btn.style.color = "white";
-        executionSpeed = parseFloat(btn.getAttribute("data-speed"));
-      };
-    });
-
-    // --- Theme Toggle ---
-    const btnToggleTheme = document.getElementById("btn-toggle-theme");
-    btnToggleTheme.onclick = () => {
-      document.documentElement.classList.toggle("dark");
-    };
-
-    // --- Modals Management ---
-    function openModal(id) {
-      document.getElementById(id).classList.add("open");
-    }
-    function closeModal(id) {
-      document.getElementById(id).classList.remove("open");
-    }
-    document.querySelectorAll(".btn-close-modal").forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll(".modal-overlay").forEach(m => m.classList.remove("open"));
-      };
-    });
-
-    // --- DB Inspector Modal Logic ---
-    document.getElementById("btn-open-db").onclick = () => {
-      renderDbTab("products");
-      openModal("modal-db");
-    };
-
-    function renderDbTab(tab) {
-      const contentEl = document.getElementById("db-tab-content");
-      document.querySelectorAll(".db-tab-btn").forEach(b => {
-        if (b.getAttribute("data-tab") === tab) {
-          b.style.background = "#6366f1";
-          b.style.color = "white";
-        } else {
-          b.style.background = "var(--bg-card)";
-          b.style.color = "var(--text-primary)";
-        }
-      });
-
-      if (tab === "products") {
-        let rows = DB_STATE.products.map(p => `
-          <tr>
-            <td class="font-mono"><strong>${p.id}</strong></td>
-            <td>${p.name}</td>
-            <td class="font-mono">$${p.price.toFixed(2)}</td>
-            <td>
-              <span class="badge ${p.stock_quantity === 0 ? 'badge-rose' : 'badge-emerald'}">
-                ${p.stock_quantity} in stock
+  <!-- ========================================================================= -->
+  <!-- 2. MAIN APPLICATION STATION (TOP HUD + TABS + GAME MODES) -->
+  <!-- ========================================================================= -->
+  <div id="mainApp" class="hidden min-h-screen flex flex-col bg-slate-950">
+    
+    <!-- Top HUD Navigation -->
+    <header class="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="h-16 flex items-center justify-between gap-4">
+          
+          <!-- Logo -->
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">⚔️</span>
+            <div>
+              <span class="font-extrabold text-lg bg-gradient-to-r from-white via-indigo-200 to-cyan-300 bg-clip-text text-transparent font-display">
+                Quest<span class="text-cyan-400">Flow</span>
               </span>
-            </td>
-            <td>
-              <button onclick="modifyStock('${p.id}', 1)" class="btn btn-secondary" style="padding: 0.2rem 0.45rem; font-size: 0.68rem;">+1</button>
-              <button onclick="modifyStock('${p.id}', -1)" class="btn btn-secondary" style="padding: 0.2rem 0.45rem; font-size: 0.68rem;">-1</button>
-            </td>
-          </tr>
-        `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Product ID</th><th>Name</th><th>Price</th><th>Stock</th><th>Live Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "orders") {
-        let rows = DB_STATE.orders.map(o => `
-          <tr>
-            <td class="font-mono"><strong>${o.id}</strong></td>
-            <td>${o.customer_id}</td>
-            <td>${o.product_name}</td>
-            <td>$${o.total_amount}</td>
-            <td><span class="badge badge-primary">${o.status}</span></td>
-            <td>${o.delivery_date || 'Processing'}</td>
-          </tr>
-        `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Product</th><th>Amount</th><th>Status</th><th>Delivered Date</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "replacements") {
-        let rows = DB_STATE.replacements.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No replacement orders created yet.</td></tr>` :
-          DB_STATE.replacements.map(r => `
-            <tr>
-              <td class="font-mono"><strong>${r.new_order_id}</strong></td>
-              <td>${r.original_order_id}</td>
-              <td>${r.product_id}</td>
-              <td class="font-mono">${r.tracking_number}</td>
-              <td><span class="badge badge-emerald">${r.status}</span></td>
-            </tr>
-          `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>New Order ID</th><th>Original Order</th><th>Product ID</th><th>Tracking</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "refunds") {
-        let rows = DB_STATE.refunds.length === 0 ? `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No refunds issued yet.</td></tr>` :
-          DB_STATE.refunds.map(rf => `
-            <tr>
-              <td class="font-mono"><strong>${rf.id}</strong></td>
-              <td>${rf.order_id}</td>
-              <td>$${rf.amount.toFixed(2)}</td>
-              <td class="font-mono">${rf.transaction_reference}</td>
-              <td><span class="badge badge-emerald">${rf.status}</span></td>
-            </tr>
-          `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Refund ID</th><th>Order</th><th>Amount</th><th>Txn Reference</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "credits") {
-        let rows = DB_STATE.store_credits.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No goodwill store credits issued yet.</td></tr>` :
-          DB_STATE.store_credits.map(c => `
-            <tr>
-              <td class="font-mono"><strong>${c.id}</strong></td>
-              <td>${c.customer_id}</td>
-              <td>$${c.amount.toFixed(2)}</td>
-              <td>${c.reason}</td>
-            </tr>
-          `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Credit ID</th><th>Customer ID</th><th>Amount</th><th>Reason</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "escalations") {
-        let rows = DB_STATE.escalations.length === 0 ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No cases escalated yet.</td></tr>` :
-          DB_STATE.escalations.map(e => `
-            <tr>
-              <td class="font-mono"><strong>${e.id}</strong></td>
-              <td>${e.case_id}</td>
-              <td>${e.reason}</td>
-              <td><span class="badge badge-amber">${e.assigned_team}</span></td>
-            </tr>
-          `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Escalation ID</th><th>Case ID</th><th>Reason</th><th>Queue</th></tr></thead><tbody>${rows}</tbody></table>`;
-      } else if (tab === "policies") {
-        let rows = DB_STATE.policies.map(pol => `
-          <tr>
-            <td class="font-mono"><strong>${pol.id}</strong></td>
-            <td><strong>${pol.policy_name}</strong></td>
-            <td>${pol.summary}</td>
-          </tr>
-        `).join("");
-        contentEl.innerHTML = `<table class="data-table"><thead><tr><th>Policy ID</th><th>Name</th><th>Summary</th></tr></thead><tbody>${rows}</tbody></table>`;
-      }
-    }
-
-    window.modifyStock = function(prodId, delta) {
-      const p = DB_STATE.products.find(prod => prod.id === prodId);
-      if (p) {
-        p.stock_quantity = Math.max(0, p.stock_quantity + delta);
-        renderDbTab("products");
-        // sync with sandbox sliders
-        if (prodId === "PROD-MONITOR-4K") {
-          document.getElementById("slider-monitor-stock").value = p.stock_quantity;
-          document.getElementById("val-monitor-stock").textContent = p.stock_quantity;
-        }
-      }
-    };
-
-    document.querySelectorAll(".db-tab-btn").forEach(btn => {
-      btn.onclick = () => renderDbTab(btn.getAttribute("data-tab"));
-    });
-
-    // --- Sandbox Modal Logic ---
-    document.getElementById("btn-open-sandbox").onclick = () => openModal("modal-sandbox");
-    document.getElementById("slider-monitor-stock").oninput = (e) => {
-      document.getElementById("val-monitor-stock").textContent = e.target.value;
-    };
-    document.getElementById("slider-headphones-stock").oninput = (e) => {
-      document.getElementById("val-headphones-stock").textContent = e.target.value;
-    };
-    document.getElementById("slider-return-window").oninput = (e) => {
-      document.getElementById("val-return-window").textContent = `${e.target.value} days`;
-    };
-    document.getElementById("slider-credit-amount").oninput = (e) => {
-      document.getElementById("val-credit-amount").textContent = `$${parseFloat(e.target.value).toFixed(2)}`;
-    };
-
-    document.getElementById("btn-save-sandbox").onclick = () => {
-      const monStock = parseInt(document.getElementById("slider-monitor-stock").value);
-      const hpStock = parseInt(document.getElementById("slider-headphones-stock").value);
-      const mon = DB_STATE.products.find(p => p.id === "PROD-MONITOR-4K");
-      if (mon) mon.stock_quantity = monStock;
-      const hp = DB_STATE.products.find(p => p.id === "PROD-HEADPHONES-01");
-      if (hp) hp.stock_quantity = hpStock;
-
-      closeModal("modal-sandbox");
-      alert("✅ Live Sandbox constraints applied! The autonomous agent will immediately adapt to these parameters.");
-    };
-
-    document.querySelectorAll(".preset-btn").forEach(btn => {
-      btn.onclick = () => {
-        const preset = btn.getAttribute("data-preset");
-        if (preset === "default") {
-          document.getElementById("slider-monitor-stock").value = 0;
-          document.getElementById("val-monitor-stock").textContent = "0";
-          document.getElementById("slider-headphones-stock").value = 15;
-          document.getElementById("val-headphones-stock").textContent = "15";
-          document.getElementById("slider-return-window").value = 30;
-          document.getElementById("val-return-window").textContent = "30 days";
-          document.getElementById("slider-credit-amount").value = 15;
-          document.getElementById("val-credit-amount").textContent = "$15.00";
-        } else if (preset === "all_stock") {
-          document.getElementById("slider-monitor-stock").value = 20;
-          document.getElementById("val-monitor-stock").textContent = "20";
-          document.getElementById("slider-headphones-stock").value = 20;
-          document.getElementById("val-headphones-stock").textContent = "20";
-        } else if (preset === "strict") {
-          document.getElementById("slider-return-window").value = 14;
-          document.getElementById("val-return-window").textContent = "14 days";
-        } else if (preset === "generous") {
-          document.getElementById("slider-return-window").value = 120;
-          document.getElementById("val-return-window").textContent = "120 days";
-        }
-      };
-    });
-
-    // --- Proof Modal Logic ---
-    document.getElementById("btn-view-proof").onclick = () => {
-      if (!currentCaseState.verification_badge) return;
-      const badge = currentCaseState.verification_badge;
-      document.getElementById("proof-modal-hash").textContent = badge.audit_hash;
-      document.getElementById("proof-action-type").textContent = badge.action_type;
-      document.getElementById("proof-target-id").textContent = badge.target_id;
-      document.getElementById("proof-db-json").textContent = JSON.stringify(badge.db_proof, null, 2);
-      openModal("modal-proof");
-    };
-
-    document.getElementById("btn-tamper-test").onclick = () => {
-      alert("🚨 CRYPTOGRAPHIC SEAL MISMATCH!\n\nTamper Test Result: Modified SQLite row hash does NOT match the cryptographic ledger seal. Ledger integrity verified.");
-    };
-
-    // --- Tools Drawer Logic ---
-    const drawerOverlay = document.getElementById("drawer-overlay");
-    const drawerTools = document.getElementById("drawer-tools");
-    const toolLogsList = document.getElementById("tool-logs-list");
-
-    document.getElementById("btn-open-tools").onclick = () => {
-      renderToolLogsDrawer("ALL");
-      drawerOverlay.classList.add("open");
-      drawerTools.classList.add("open");
-    };
-
-    function closeDrawer() {
-      drawerOverlay.classList.remove("open");
-      drawerTools.classList.remove("open");
-    }
-    drawerOverlay.onclick = closeDrawer;
-    document.getElementById("btn-close-drawer").onclick = closeDrawer;
-
-    const ENTERPRISE_TOOLS = [
-      { name: "get_customer", desc: "Retrieves customer profile, tier, trust score, and spend.", latency: 32 },
-      { name: "get_order", desc: "Inspects order items, shipping status, and delivery date.", latency: 45 },
-      { name: "get_inventory", desc: "Checks warehouse stock count for specific product ID.", latency: 28 },
-      { name: "search_policy", desc: "Evaluates return, refund, replacement and warranty rules.", latency: 52 },
-      { name: "get_customer_history", desc: "Retrieves past disputes, claims, and interaction flags.", latency: 41 },
-      { name: "create_replacement", desc: "Dispatches complimentary replacement (fails on Stock: 0).", latency: 89 },
-      { name: "issue_refund", desc: "Credits customer's payment method and settles transaction.", latency: 95 },
-      { name: "cancel_order", desc: "Cancels unfulfilled order and increments stock count.", latency: 64 },
-      { name: "create_store_credit", desc: "Issues courtesy goodwill store credit to wallet.", latency: 48 },
-      { name: "verify_resolution", desc: "Audits SQLite ledger and generates SHA-256 seal.", latency: 35 },
-      { name: "escalate_to_human", desc: "Routes ticket to Tier-2 supervisor for safety violations.", latency: 70 }
-    ];
-
-    function renderToolLogsDrawer(filter) {
-      toolLogsList.innerHTML = "";
-      document.querySelectorAll(".tool-filter-btn").forEach(b => {
-        if (b.getAttribute("data-filter") === filter) {
-          b.style.background = "#6366f1";
-          b.style.color = "white";
-        } else {
-          b.style.background = "var(--bg-card)";
-          b.style.color = "var(--text-primary)";
-        }
-      });
-
-      ENTERPRISE_TOOLS.forEach(tool => {
-        const isReplanningTarget = tool.name === "create_replacement";
-        if (filter === "FAILURE" && !isReplanningTarget) return;
-
-        const card = document.createElement("div");
-        card.style.padding = "0.75rem";
-        card.style.borderRadius = "var(--radius-md)";
-        card.style.background = "var(--bg-card)";
-        card.style.border = "1px solid var(--border-color)";
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-            <strong class="font-mono" style="font-size: 0.8rem; color: #38bdf8;">${tool.name}()</strong>
-            <span class="badge ${isReplanningTarget && filter === 'FAILURE' ? 'badge-rose' : 'badge-emerald'}">
-              ${isReplanningTarget && filter === 'FAILURE' ? 'INSUFFICIENT_STOCK' : 'SUCCESS'} &bull; ${tool.latency}ms
-            </span>
+              <span class="text-[9px] font-bold ml-1 px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">RPG</span>
+            </div>
           </div>
-          <p style="font-size: 0.72rem; color: var(--text-secondary);">${tool.desc}</p>
+
+          <!-- Gauges -->
+          <div class="hidden md:flex items-center gap-4 flex-1 max-w-md px-2">
+            <div class="flex flex-col items-center justify-center min-w-[48px] px-2 py-1 rounded-xl bg-gradient-to-tr from-cyan-600 to-indigo-600 text-white font-extrabold shadow-md">
+              <span class="text-[9px] uppercase text-cyan-200">LVL</span>
+              <span id="hudLevel" class="text-sm font-black leading-none">4</span>
+            </div>
+            <div class="flex-1 space-y-1">
+              <div class="flex justify-between text-[10px] font-semibold text-slate-300">
+                <span class="text-cyan-400 font-bold">✨ XP</span>
+                <span id="hudXpLabel">420 / 923 (45%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-900 border border-slate-800 overflow-hidden">
+                <div id="hudXpBar" class="h-full rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 transition-all duration-500" style="width: 45%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Currencies & Profile -->
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-orange-500/10 border border-orange-500/30 text-amber-300 font-bold text-xs" title="Consecutive Streak">
+              <span>🔥</span> <span id="hudStreak">7d</span>
+            </div>
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-bold text-xs" title="Gold Coins">
+              <span>🪙</span> <span id="hudGold">240</span>
+            </div>
+            <div class="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-bold text-xs" title="Soul Gems">
+              <span>💎</span> <span id="hudGems">12</span>
+            </div>
+            <button onclick="toggleAudio()" id="audioBtn" class="p-2 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-cyan-400 transition-colors" title="Toggle SFX Audio (M)">
+              🔊
+            </button>
+            <button onclick="handleLogout()" class="px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-xs font-bold text-slate-300 hover:bg-slate-800 transition-colors">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-1 overflow-x-auto py-2 border-t border-slate-800/40">
+          <button onclick="switchTab('quests')" id="tabBtn-quests" class="tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+            <span>⚔️</span> Quest Board <span class="text-[9px] bg-slate-800 px-1 rounded text-slate-400">1</span>
+          </button>
+          <button onclick="switchTab('character')" id="tabBtn-character" class="tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-transparent">
+            <span>🧙‍♂️</span> Character Sheet <span class="text-[9px] bg-slate-800 px-1 rounded text-slate-400">2</span>
+          </button>
+          <button onclick="switchTab('boss')" id="tabBtn-boss" class="tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-transparent">
+            <span>👹</span> Boss Arena <span class="text-[9px] bg-slate-800 px-1 rounded text-slate-400">3</span>
+          </button>
+          <button onclick="switchTab('shop')" id="tabBtn-shop" class="tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-transparent">
+            <span>🛒</span> Armory Shop <span class="text-[9px] bg-slate-800 px-1 rounded text-slate-400">4</span>
+          </button>
+          <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-transparent">
+            <span>📊</span> Streak Matrix <span class="text-[9px] bg-slate-800 px-1 rounded text-slate-400">5</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      
+      <!-- TAB 1: QUEST BOARD -->
+      <div id="view-quests" class="space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
+            <button onclick="filterQuests('all')" class="q-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">All Quests</button>
+            <button onclick="filterQuests('intellect')" class="q-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">🧠 Intellect</button>
+            <button onclick="filterQuests('strength')" class="q-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">⚔️ Strength</button>
+            <button onclick="filterQuests('agility')" class="q-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">⚡ Agility</button>
+            <button onclick="filterQuests('vitality')" class="q-filter-btn px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white">🛡️ Vitality</button>
+          </div>
+          <button onclick="openNewQuestModal()" class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/20 hover:opacity-90 flex items-center justify-center gap-1.5">
+            <span>+ Forge New Quest</span> <span class="text-[9px] bg-black/20 px-1 rounded text-cyan-200">N</span>
+          </button>
+        </div>
+
+        <div id="questsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically Rendered Quests -->
+        </div>
+      </div>
+
+      <!-- TAB 2: CHARACTER SHEET -->
+      <div id="view-character" class="hidden space-y-6">
+        <div class="rounded-3xl p-6 bg-gradient-to-r from-slate-900 via-indigo-950/50 to-slate-900 border border-slate-800 shadow-2xl flex flex-col sm:flex-row items-center gap-6">
+          <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-cyan-600 to-indigo-600 p-1 shadow-xl flex items-center justify-center text-5xl">
+            🧙‍♂️
+          </div>
+          <div class="text-center sm:text-left flex-1">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h2 id="charName" class="text-2xl font-black text-white">Alex Chen</h2>
+              <span id="charClass" class="px-2 py-0.5 rounded-lg text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Code Mage</span>
+              <span id="charTitle" class="px-2 py-0.5 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Lead AI Ops Architect</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Equipped with neural runes. Every quest completed levels up 5-attribute mastery and strikes dungeon bosses.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Gear Slots -->
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+            <h3 class="text-sm font-bold text-slate-200">Equipped Battle Gear</h3>
+            <div class="space-y-2.5 text-xs">
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-cyan-500/40 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">🗡️</span>
+                  <div>
+                    <strong class="text-white block">Quantum Keyblade</strong>
+                    <span class="text-[10px] text-cyan-300">+5 Intellect • +25 Boss ATK</span>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">EQUIPPED</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-purple-500/40 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">🪖</span>
+                  <div>
+                    <strong class="text-white block">Holographic Neural Visor</strong>
+                    <span class="text-[10px] text-purple-300">+4 Intellect • +20 Max MP</span>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300">EQUIPPED</span>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-emerald-500/40 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                  <span class="text-xl">🦅</span>
+                  <div>
+                    <strong class="text-white block">Cyber Phoenix Familiar</strong>
+                    <span class="text-[10px] text-emerald-300">+10% Bonus XP on Coding</span>
+                  </div>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">EQUIPPED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5-Attribute Radar / Bars -->
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+            <h3 class="text-sm font-bold text-slate-200">5-Attribute Progression Radar</h3>
+            <div class="space-y-3 pt-2 text-xs">
+              <div class="space-y-1">
+                <div class="flex justify-between font-bold">
+                  <span class="text-cyan-400">🧠 Intellect</span>
+                  <span id="statIntellect">34 (+9 Gear)</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden"><div class="h-full bg-cyan-500" style="width: 43%;"></div></div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between font-bold">
+                  <span class="text-rose-400">⚔️ Strength</span>
+                  <span id="statStrength">16</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden"><div class="h-full bg-rose-500" style="width: 20%;"></div></div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between font-bold">
+                  <span class="text-emerald-400">⚡ Agility</span>
+                  <span id="statAgility">22</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden"><div class="h-full bg-emerald-500" style="width: 28%;"></div></div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between font-bold">
+                  <span class="text-purple-400">🛡️ Vitality</span>
+                  <span id="statVitality">20</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden"><div class="h-full bg-purple-500" style="width: 25%;"></div></div>
+              </div>
+              <div class="space-y-1">
+                <div class="flex justify-between font-bold">
+                  <span class="text-amber-400">🔮 Charisma</span>
+                  <span id="statCharisma">18</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-slate-950 overflow-hidden"><div class="h-full bg-amber-500" style="width: 22%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: BOSS ARENA -->
+      <div id="view-boss" class="hidden space-y-6">
+        <div class="relative rounded-3xl bg-slate-900/80 border border-slate-800 shadow-2xl p-6 sm:p-8 flex flex-col lg:flex-row items-center gap-8">
+          <div class="flex flex-col items-center text-center">
+            <div id="bossSprite" class="w-36 h-36 rounded-3xl bg-gradient-to-br from-rose-950 to-indigo-950 border-2 border-rose-500/40 flex items-center justify-center text-6xl shadow-2xl anim-float">
+              👹
+            </div>
+            <h2 class="text-lg font-black text-white mt-3">The Dread Procrastination Demon</h2>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300">Tier 1 World Boss</span>
+          </div>
+
+          <div class="flex-1 w-full space-y-4">
+            <p class="text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+              A titan spawned from delayed deadlines and unfinished tasks. Complete your journal tasks to deal weapon strike damage!
+            </p>
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-bold text-rose-400">
+                <span>👹 Monster Health Gauge</span>
+                <span id="bossHpLabel">3,580 / 5,000 HP (71%)</span>
+              </div>
+              <div class="w-full h-4 rounded-full bg-slate-950 border border-slate-800 overflow-hidden">
+                <div id="bossHpBar" class="h-full rounded-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all duration-500" style="width: 71%;"></div>
+              </div>
+            </div>
+
+            <div class="flex gap-3 text-xs font-bold">
+              <span class="text-cyan-400">✨ +600 XP Bounty</span>
+              <span class="text-amber-400">🪙 +250 Gold</span>
+              <span class="text-purple-400">💎 +15 Soul Gems</span>
+            </div>
+
+            <button onclick="attackBossDirect()" class="w-full py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-lg shadow-rose-600/25 hover:opacity-90">
+              ⚔️ Overclock Focus Strike (-20 Focus MP)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: ARMORY SHOP -->
+      <div id="view-shop" class="hidden space-y-6">
+        <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex justify-between items-center">
+          <div>
+            <h3 class="text-sm font-bold text-white">The Royal Armory & Bazaar</h3>
+            <p class="text-xs text-slate-400">Spend quest gold & gems to empower character stats.</p>
+          </div>
+          <span class="text-xs font-bold text-amber-400">🪙 Shop Active</span>
+        </div>
+
+        <div id="shopGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Rendered shop items -->
+        </div>
+      </div>
+
+      <!-- TAB 5: ANALYTICS & STREAKS -->
+      <div id="view-analytics" class="hidden space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <span class="text-xs text-slate-400 block">Consecutive Streak</span>
+            <strong class="text-2xl font-black text-amber-400">7 Days</strong>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <span class="text-xs text-slate-400 block">Quests Cleared</span>
+            <strong class="text-2xl font-black text-emerald-400">19</strong>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <span class="text-xs text-slate-400 block">Boss Damage</span>
+            <strong class="text-2xl font-black text-rose-400">1,420 HP</strong>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <span class="text-xs text-slate-400 block">Current Realm</span>
+            <strong class="text-2xl font-black text-cyan-400">Tier 4</strong>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+          <h3 class="text-sm font-bold text-white">30-Day Activity Matrix</h3>
+          <div id="heatmapGrid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-15 gap-2">
+            <!-- 30 Days Generated Dynamically -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500">
+      QuestFlow RPG Gamified Life Engine • Built with React 19, FastAPI & SQLite
+    </footer>
+  </div>
+
+  <!-- LEVEL UP CELEBRATION MODAL -->
+  <div id="levelUpModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl">
+    <div class="relative w-full max-w-md rounded-3xl bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 border-2 border-cyan-500 shadow-2xl p-6 sm:p-8 text-center">
+      <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-cyan-500 to-fuchsia-500 p-1 shadow-2xl mx-auto mb-3 flex items-center justify-center text-4xl">
+        👑
+      </div>
+      <h2 class="text-2xl font-black text-white">LEVEL UP REACHED!</h2>
+      <p class="text-xs text-slate-300 mt-1">Your discipline has ascended! Core stats boosted and HP/MP restored.</p>
+      <button onclick="closeLevelUpModal()" class="w-full mt-6 py-3 rounded-2xl font-bold text-sm bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-xl hover:opacity-95">
+        Claim Spoils & Continue Quest →
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 3. JAVASCRIPT LOGIC & PROCEDURAL WEB AUDIO SFX -->
+  <!-- ========================================================================= -->
+  <script>
+    // --- Audio Synthesizer ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let isMuted = false;
+
+    function playTone(freq, type, duration, delay = 0) {
+      if (isMuted || !audioCtx) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      setTimeout(() => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      }, delay);
+    }
+
+    function sfxQuestDone() {
+      playTone(523, 'triangle', 0.2, 0);
+      playTone(659, 'triangle', 0.2, 80);
+      playTone(784, 'triangle', 0.3, 160);
+      playTone(1046, 'sine', 0.4, 240);
+    }
+
+    function sfxLevelUp() {
+      playTone(523, 'sawtooth', 0.2, 0);
+      playTone(659, 'sawtooth', 0.2, 120);
+      playTone(784, 'sawtooth', 0.2, 240);
+      playTone(1046, 'sawtooth', 0.8, 360);
+    }
+
+    function sfxBossSlash() {
+      playTone(280, 'sawtooth', 0.2, 0);
+      playTone(90, 'triangle', 0.25, 40);
+    }
+
+    function toggleAudio() {
+      isMuted = !isMuted;
+      document.getElementById('audioBtn').innerText = isMuted ? '🔇' : '🔊';
+    }
+
+    // --- State & Demo Data ---
+    let state = {
+      level: 4,
+      currentXp: 420,
+      nextXp: 923,
+      gold: 240,
+      gems: 12,
+      streak: 7,
+      bossHp: 3580,
+      bossMaxHp: 5000,
+      selectedClass: 'Code Mage',
+      tasks: [
+        { id: 1, title: 'Architect Fast React Flow Engine', cat: 'Quest', attr: 'intellect', diff: 'epic', xp: 250, gold: 110, done: false },
+        { id: 2, title: 'Complete 45-min Heavy Gym Workout', cat: 'Daily', attr: 'strength', diff: 'hard', xp: 120, gold: 50, done: false },
+        { id: 3, title: 'Daily Water Hydration Goal (3L)', cat: 'Habit', attr: 'vitality', diff: 'easy', xp: 30, gold: 12, done: true },
+        { id: 4, title: 'Speed-run 3 Pull Request Reviews', cat: 'Daily', attr: 'agility', diff: 'medium', xp: 60, gold: 25, done: false }
+      ],
+      shop: [
+        { id: 1, name: 'Cyber Katana Neon-X', type: 'Weapon', rarity: 'Epic', cost: 260, costType: 'gold', icon: '🗡️', bonus: '+9 Agility • +45 Boss ATK' },
+        { id: 2, name: 'Obsidian Dragon Armor', type: 'Armor', rarity: 'Legendary', cost: 15, costType: 'gems', icon: '🛡️', bonus: '+10 Vitality • +80 Max HP' },
+        { id: 3, name: 'Potion of Focus Overclock', type: 'Consumable', rarity: 'Common', cost: 45, costType: 'gold', icon: '🧪', bonus: '+150 Instant XP' }
+      ]
+    };
+
+    function updateHUD() {
+      document.getElementById('hudLevel').innerText = state.level;
+      const pct = Math.min(100, Math.round((state.currentXp / state.nextXp) * 100));
+      document.getElementById('hudXpLabel').innerText = `${state.currentXp} / ${state.nextXp} (${pct}%)`;
+      document.getElementById('hudXpBar').style.width = `${pct}%`;
+      document.getElementById('hudStreak').innerText = `${state.streak}d`;
+      document.getElementById('hudGold').innerText = state.gold;
+      document.getElementById('hudGems').innerText = state.gems;
+    }
+
+    function renderQuests(filter = 'all') {
+      const container = document.getElementById('questsContainer');
+      container.innerHTML = '';
+      const filtered = state.tasks.filter(t => filter === 'all' || t.attr === filter);
+
+      filtered.forEach(task => {
+        const div = document.createElement('div');
+        div.className = `p-4 rounded-2xl border transition-all ${task.done ? 'bg-slate-950/40 border-slate-800/60 opacity-60' : 'bg-slate-900/70 border-slate-800/80 hover:border-slate-700'}`;
+        div.innerHTML = `
+          <div class="flex justify-between items-center mb-2.5">
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 uppercase">${task.attr}</span>
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-300">${task.cat}</span>
+              <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-purple-500/20 text-purple-300">${task.diff.toUpperCase()}</span>
+            </div>
+            <div class="text-xs font-bold text-cyan-400">+${task.xp} XP • +${task.gold}G</div>
+          </div>
+          <div class="flex items-start gap-3">
+            <button onclick="toggleQuest(${task.id})" class="mt-0.5 text-xl cursor-pointer">${task.done ? '✅' : '⭕'}</button>
+            <div class="flex-1">
+              <h4 class="text-sm font-bold ${task.done ? 'line-through text-slate-400' : 'text-white'}">${task.title}</h4>
+            </div>
+          </div>
         `;
-        toolLogsList.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    document.querySelectorAll(".tool-filter-btn").forEach(btn => {
-      btn.onclick = () => renderToolLogsDrawer(btn.getAttribute("data-filter"));
+    function toggleQuest(id) {
+      const t = state.tasks.find(x => x.id === id);
+      if (!t) return;
+      t.done = !t.done;
+      if (t.done) {
+        sfxQuestDone();
+        state.currentXp += t.xp;
+        state.gold += t.gold;
+        state.bossHp = Math.max(0, state.bossHp - 120);
+
+        if (state.currentXp >= state.nextXp) {
+          state.currentXp -= state.nextXp;
+          state.level += 1;
+          state.nextXp = Math.floor(100 * Math.pow(state.level, 1.6));
+          sfxLevelUp();
+          document.getElementById('levelUpModal').classList.remove('hidden');
+        }
+      }
+      updateHUD();
+      renderQuests();
+      updateBossDisplay();
+    }
+
+    function updateBossDisplay() {
+      const pct = Math.min(100, Math.round((state.bossHp / state.bossMaxHp) * 100));
+      document.getElementById('bossHpLabel').innerText = `${state.bossHp.toLocaleString()} / ${state.bossMaxHp.toLocaleString()} HP (${pct}%)`;
+      document.getElementById('bossHpBar').style.width = `${pct}%`;
+    }
+
+    function attackBossDirect() {
+      sfxBossSlash();
+      state.bossHp = Math.max(0, state.bossHp - 350);
+      updateBossDisplay();
+    }
+
+    function closeLevelUpModal() {
+      document.getElementById('levelUpModal').classList.add('hidden');
+    }
+
+    function renderShop() {
+      const container = document.getElementById('shopGrid');
+      container.innerHTML = '';
+      state.shop.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2';
+        div.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="text-2xl">${item.icon}</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 uppercase">${item.rarity}</span>
+          </div>
+          <h4 class="text-sm font-bold text-white">${item.name}</h4>
+          <p class="text-[11px] text-cyan-400 font-semibold">${item.bonus}</p>
+          <div class="pt-2 border-t border-slate-800 flex justify-between items-center">
+            <span class="text-xs font-bold text-amber-400">${item.cost} ${item.costType === 'gems' ? '💎 Gems' : '🪙 Gold'}</span>
+            <button onclick="buyItem('${item.name}', ${item.cost}, '${item.costType}')" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30">Acquire</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function buyItem(name, cost, type) {
+      if (type === 'gold' && state.gold >= cost) {
+        state.gold -= cost;
+        alert(`Acquired ${name}! Boost applied to character sheet.`);
+      } else if (type === 'gems' && state.gems >= cost) {
+        state.gems -= cost;
+        alert(`Acquired ${name}! Boost applied to character sheet.`);
+      } else {
+        alert("Not enough funds! Complete more quests.");
+      }
+      updateHUD();
+    }
+
+    function renderHeatmap() {
+      const grid = document.getElementById('heatmapGrid');
+      grid.innerHTML = '';
+      const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      for (let i = 0; i < 30; i++) {
+        const val = Math.floor(Math.random() * 4);
+        const bg = val === 3 ? 'bg-cyan-500 text-slate-950' : (val === 2 ? 'bg-cyan-700 text-white' : (val === 1 ? 'bg-cyan-950 text-cyan-300' : 'bg-slate-900 text-slate-600'));
+        const div = document.createElement('div');
+        div.className = `p-2 rounded-xl border border-slate-800 flex flex-col items-center justify-center font-bold text-xs ${bg}`;
+        div.innerHTML = `<span class="text-[9px] opacity-75">${days[i % 7]}</span><span>${val * 2}</span>`;
+        grid.appendChild(div);
+      }
+    }
+
+    // --- Auth & Tab Switching ---
+    function switchAuthTab(t) {
+      document.getElementById('loginSection').classList.toggle('hidden', t !== 'login');
+      document.getElementById('signupSection').classList.toggle('hidden', t !== 'signup');
+      document.getElementById('demoSection').classList.toggle('hidden', t !== 'demo');
+
+      const activeClass = 'bg-gradient-to-r from-cyan-500 to-indigo-600 text-white shadow-lg shadow-cyan-500/20';
+      const inactiveClass = 'text-slate-400 hover:text-white';
+      
+      document.getElementById('tabSignInBtn').className = `flex-1 py-2 text-xs font-bold rounded-lg transition-all ${t === 'login' ? activeClass : inactiveClass}`;
+      document.getElementById('tabSignUpBtn').className = `flex-1 py-2 text-xs font-bold rounded-lg transition-all ${t === 'signup' ? activeClass : inactiveClass}`;
+      document.getElementById('tabDemoBtn').className = `flex-1 py-2 text-xs font-bold rounded-lg transition-all ${t === 'demo' ? activeClass : inactiveClass}`;
+    }
+
+    function selectClass(el, name) {
+      document.querySelectorAll('.class-card').forEach(c => {
+        c.className = 'class-card p-2 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 cursor-pointer hover:border-slate-700';
+      });
+      el.className = 'class-card p-2 rounded-xl border border-cyan-500 bg-cyan-500/20 text-white cursor-pointer';
+      state.selectedClass = name;
+    }
+
+    function updateStrengthBar(pwd) {
+      let score = 0;
+      if (pwd.length >= 6) score++;
+      if (pwd.length >= 10) score++;
+      if (/[0-9]/.test(pwd)) score++;
+      if (/[^A-Za-z0-9]/.test(pwd)) score++;
+      const colors = ['bg-rose-500', 'bg-amber-500', 'bg-cyan-500', 'bg-emerald-500'];
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById(`strBar${i}`).className = `h-full flex-1 transition-colors ${score >= i ? colors[score - 1] : 'bg-slate-800'}`;
+      }
+    }
+
+    function handleLogin() {
+      sfxQuestDone();
+      enterApp('Alex Chen', 'Code Mage', 'Lead AI Ops Architect');
+    }
+
+    function handleSignup() {
+      const u = document.getElementById('signupUsername').value || 'DragonSlayer';
+      sfxLevelUp();
+      enterApp(u, state.selectedClass, 'Novice Adventurer');
+    }
+
+    function loginAsDemo(p) {
+      sfxQuestDone();
+      if (p === 'alex') enterApp('Alex Chen', 'Code Mage', 'Lead AI Ops Architect');
+      if (p === 'sarah') enterApp('Sarah Lin', 'Paladin Scholar', 'Resolution Champion');
+      if (p === 'marcus') enterApp('Marcus Vance', 'Cyber Rogue', 'Speedrunner of Tasks');
+    }
+
+    function enterApp(name, cls, title) {
+      document.getElementById('charName').innerText = name;
+      document.getElementById('charClass').innerText = cls;
+      document.getElementById('charTitle').innerText = title;
+      document.getElementById('authGateway').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      updateHUD();
+      renderQuests();
+      renderShop();
+      renderHeatmap();
+    }
+
+    function handleLogout() {
+      document.getElementById('mainApp').classList.add('hidden');
+      document.getElementById('authGateway').classList.remove('hidden');
+    }
+
+    function switchTab(tabId) {
+      const views = ['quests', 'character', 'boss', 'shop', 'analytics'];
+      views.forEach(v => {
+        document.getElementById(`view-${v}`).classList.toggle('hidden', v !== tabId);
+        const btn = document.getElementById(`tabBtn-${v}`);
+        if (v === tabId) {
+          btn.className = 'tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40';
+        } else {
+          btn.className = 'tab-nav-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white border border-transparent';
+        }
+      });
+    }
+
+    function filterQuests(attr) {
+      renderQuests(attr);
+    }
+
+    function openNewQuestModal() {
+      const title = prompt("Enter new Quest Title:");
+      if (!title) return;
+      state.tasks.unshift({
+        id: Date.now(),
+        title: title,
+        cat: 'Quest',
+        attr: 'intellect',
+        diff: 'medium',
+        xp: 60,
+        gold: 25,
+        done: false
+      });
+      renderQuests();
+      sfxQuestDone();
+    }
+
+    // Keyboard Shortcuts (1-5 for tabs, N for new quest, M for mute)
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      if (e.key === '1') switchTab('quests');
+      if (e.key === '2') switchTab('character');
+      if (e.key === '3') switchTab('boss');
+      if (e.key === '4') switchTab('shop');
+      if (e.key === '5') switchTab('analytics');
+      if (e.key.toLowerCase() === 'n') openNewQuestModal();
+      if (e.key.toLowerCase() === 'm') toggleAudio();
     });
-
-    // --- Specs & Custom Ticket Modals ---
-    document.getElementById("btn-open-specs").onclick = () => openModal("modal-specs");
-    document.getElementById("btn-open-custom-ticket").onclick = () => openModal("modal-custom");
-
-    document.getElementById("btn-submit-custom").onclick = () => {
-      const custId = document.getElementById("custom-customer").value;
-      const cat = document.getElementById("custom-category").value;
-      const title = document.getElementById("custom-title").value;
-      const msg = document.getElementById("custom-message").value;
-
-      const customScenario = {
-        id: `TCK-${Math.floor(5000 + Math.random() * 4000)}`,
-        title: `Custom: ${title}`,
-        customer_id: custId,
-        order_id: "ORD-1042",
-        issue_type: cat,
-        priority: "HIGH",
-        badge: "Custom Ticket",
-        message: msg,
-        expected: "Autonomous agent analyzes custom claims, executes policy rules, and verifies state."
-      };
-
-      SCENARIOS.unshift(customScenario);
-      closeModal("modal-custom");
-      selectScenario(customScenario.id);
-    };
-
-    // --- Reset Demo DB Button ---
-    document.getElementById("btn-reset-demo").onclick = () => {
-      // restore stock
-      const mon = DB_STATE.products.find(p => p.id === "PROD-MONITOR-4K");
-      if (mon) mon.stock_quantity = 0;
-      const hp = DB_STATE.products.find(p => p.id === "PROD-HEADPHONES-01");
-      if (hp) hp.stock_quantity = 15;
-      const ch = DB_STATE.products.find(p => p.id === "PROD-CHAIR-ERG");
-      if (ch) ch.stock_quantity = 8;
-
-      DB_STATE.replacements = [];
-      DB_STATE.refunds = [];
-      DB_STATE.store_credits = [];
-      DB_STATE.escalations = [];
-
-      selectScenario("TCK-1042");
-      alert("✨ Demo scenarios and database reset to pristine initial state!");
-    };
-
-    // --- Initialization ---
-    renderScenarios();
-    updateTicketContext();
-    checkLiveBackend();
   </script>
 </body>
 </html>
