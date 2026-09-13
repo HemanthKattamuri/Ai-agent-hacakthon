@@ -7,7 +7,25 @@
 [![Architecture](https://img.shields.io/badge/Architecture-ReAct%20Loop%20%2B%20SSE-6366f1.svg)]()
 [![Theme](https://img.shields.io/badge/UI-Modern%20Light%20%26%20Dark-8b5cf6.svg)]()
 
-> **ResolveFlow** is an enterprise-grade autonomous AI customer resolution agent that executes end-to-end multi-step issue investigations, enforces return/replacement policies, handles out-of-stock replanning, mutates database records across 11 simulated enterprise tools, and provides certified cryptographic SHA-256 ledger seals.
+---
+
+## 🎯 Problem Statement 5: Autonomous Customer Resolution Agent
+
+> ### **The Challenge:**
+> **Build an autonomous customer-resolution agent whose objective is to actually resolve a customer's issue across simulated enterprise systems, rather than merely classify the ticket or generate a reply.**
+> 
+> **The agent should:**
+> 1. **Inspect** customer / order / policy information across live enterprise systems.
+> 2. **Decide** an appropriate resolution aligned with warranty windows and customer tiers.
+> 3. **Execute** real state-changing actions (database mutations, replacements, refunds, store credits).
+> 4. **Verify** the effects of its actions against the database.
+> 5. **Replan dynamically** when an action is blocked (e.g. out-of-stock items) or a new constraint appears.
+
+---
+
+## 💡 The ResolveFlow Solution
+
+**ResolveFlow** is an enterprise-grade autonomous ReAct AI customer resolution agent that goes far beyond static classification or automated text replies. It acts as an autonomous tier-1 and tier-2 operations agent that autonomously queries relational SQLite databases, audits live warehouse stock, enforces enterprise policy constraints, commits atomic state mutations, verifies state transitions with SHA-256 cryptographic seals, and dynamically pivots to alternative remedies when primary resolution paths are blocked.
 
 ---
 
@@ -21,15 +39,15 @@
 - [🚀 Quick Start & Installation](#-quick-start--installation)
 - [🧪 Automated Test Suite](#-automated-test-suite)
 - [🏛️ System Architecture & File Structure](#️-system-architecture--file-structure)
-- [📦 Push to GitHub](#-push-to-github)
+- [⚡ Quick Shortcut Understanding (TL;DR Cheat Sheet)](#-quick-shortcut-understanding-tldr-cheat-sheet)
 
 ---
 
 ## 🌟 Key Innovations
 
-1. **Autonomous ReAct Deliberation Loop**: The agent reasons dynamically through **Thought**, **Tool Call**, and **Observation** steps before mutating enterprise state.
-2. **Dynamic Replanning on Failure**: When an initial resolution is blocked (e.g., warehouse inventory is depleted), the agent automatically diagnoses the failure, replans a secondary remedy (such as a 100% refund + goodwill store credit), and executes it without human stall.
-3. **Relational SQLite State Mutation**: Performs real database inserts and updates across orders, replacements, refunds, inventory, and ledger history.
+1. **Autonomous ReAct Deliberation Loop**: The agent reasons through explicit **Goal**, **Tool Call**, **Observation**, **Decision**, **Mutation**, and **Verification** steps.
+2. **Dynamic Replanning on Failure**: When an initial resolution is blocked (e.g., warehouse inventory is 0), the agent diagnoses the failure, replans a secondary remedy (100% refund + goodwill store credit), and executes it without human stall.
+3. **Relational SQLite State Mutation**: Performs real database writes across orders, replacements, refunds, inventory, and ledger history.
 4. **Cryptographic SHA-256 Ledger Seals**: Asserts state change validity with an immutable hash seal calculated over the ticket, action, order, and timestamp.
 5. **Interactive Policy & Inventory Sandbox**: Tweak live inventory stock and policy windows in real-time to watch the agent adapt its reasoning on the fly.
 6. **Starting Security Gateway**: Features a canvas-rendered 3D Animated Neural Core with elastic attachment filaments and operator authentication.
@@ -216,22 +234,16 @@ resolveflow/
 
 ---
 
-## 📦 Push to GitHub
+## ⚡ Quick Shortcut Understanding (TL;DR Cheat Sheet)
 
-To push the latest updates to your GitHub repository:
-
-```bash
-cd /Users/hemanthkattamuri/Documents/resolveflow
-
-# 1. Stage all changes
-git add .
-
-# 2. Commit with descriptive message
-git commit -m "docs: update comprehensive README with architecture, ReAct flow, and tool specs"
-
-# 3. Push to GitHub
-git push origin main
-```
+| Concept | How ResolveFlow Solves It |
+|---|---|
+| **What is this?** | An autonomous AI agent that **actually executes database changes and resolutions** across enterprise systems, not just a chatbot generating replies. |
+| **How does it reason?** | **ReAct Loop**: Goal formulation → Tool querying → Observation → Decision → Database Mutation → Verification. |
+| **What happens if stock is 0?** | **Dynamic Replanning**: Automatically catches the stock failure, cancels replacement, issues 100% refund + goodwill store credit. |
+| **What happens if policy is violated?** | **Guardrail Escalation**: Detects late return / out-of-warranty claims and safely escalates to human tier-2 support. |
+| **How is state integrity proven?** | **Cryptographic SHA-256 Seal**: Generates tamper-evident hash proof tying ticket, order, and database mutation. |
+| **How to run the demo?** | Run `./run.sh`, open `http://localhost:5173`, click **"Authenticate Demo Operator"**, and hit **"Run Autonomous Agent"**! |
 
 ---
 
