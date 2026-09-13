@@ -2642,7 +2642,10 @@
     // --- Check Live Backend API ---
     async function checkLiveBackend() {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/tickets", { method: "GET" });
+        const endpoint = (window.location.port === "5173" || window.location.protocol === "file:") 
+          ? "http://127.0.0.1:8000/api/tickets" 
+          : "/api/tickets";
+        const res = await fetch(endpoint, { method: "GET" });
         if (res.ok) {
           liveApiAvailable = true;
           document.getElementById("backend-status-pill").className = "badge badge-emerald";

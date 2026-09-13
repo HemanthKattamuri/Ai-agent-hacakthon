@@ -15,7 +15,7 @@ import asyncio
 from typing import Dict, Any, Optional
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
 
 from database import init_db, get_db_connection
@@ -48,6 +48,18 @@ def startup_event():
 
 @app.get("/")
 def root():
+    index_path = CURRENT_DIR.parent / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {
+        "name": "ResolveFlow — Autonomous Customer Resolution Agent API",
+        "status": "online",
+        "version": "1.0.0",
+        "docs_url": "/docs"
+    }
+
+@app.get("/api")
+def api_info():
     return {
         "name": "ResolveFlow — Autonomous Customer Resolution Agent API",
         "status": "online",
