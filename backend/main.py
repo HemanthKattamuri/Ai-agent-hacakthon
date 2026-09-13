@@ -22,7 +22,10 @@ from database import init_db, get_db_connection
 from seed import seed_database
 from tools import TOOL_REGISTRY
 from agent_engine import AgentEngine, create_agent_case
-from models import RunAgentRequest, CustomTicketRequest, PolicyOverrideRequest, InventoryUpdateRequest
+from models import (
+    RunAgentRequest, CustomTicketRequest, PolicyOverrideRequest,
+    InventoryUpdateRequest, AuthLoginRequest, AuthRegisterRequest
+)
 
 app = FastAPI(
     title="ResolveFlow API",
@@ -322,3 +325,67 @@ def reset_demo_data():
     """Reset the SQLite database to seeded initial state."""
     seed_database()
     return {"message": "ResolveFlow database reset to clean seeded state successfully."}
+
+@app.get("/api/auth/operators")
+def list_operators():
+    """List registered security operators for fast login switching."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, email, role, department, clearance_level, avatar_color, last_login FROM operators")
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return {"operators": rows}
+
+@app.post("/api/auth/login")
+def auth_login(req: AuthLoginRequest):
+    """Authenticate operator and return security clearance token."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM operators WHERE email = ?", (req.email.strip().lower(),))
+    row = cursor.fetchone()
+    if not row:
+        # Fallback to create dynamic session
+        name = req.email.split("@")[0].replace(".", " ").title()
+        cursor.execute("""
+            INSERT OR REPLACE INTO operators (id, name, email, role, department, clearance_level, avatar_color, last_login)
+            VALUES (?, ?, ?, 'AGENT_OPERATOR', 'AI Operations', 'Tier-2 Operator', '#6366f1', datetime('now'))
+        """, (f"OP-{abs(hash(req.email)) % 1000:03d}", name, req.email.strip().lower()))
+        conn.commit()
+        cursor.execute("SELECT * FROM operators WHERE email = ?", (req.email.strip().lower(),))
+        row = cursor.fetchone()
+
+    operator = dict(row)
+    cursor.execute("UPDATE operators SET last_login = datetime('now') WHERE id = ?", (operator["id"],))
+    conn.commit()
+    conn.close()
+
+    return {
+        "status": "SUCCESS",
+        "token": f"jwt-sec-{operator['id']}-live",
+        "operator": operator
+    }
+
+@app.post("/api/auth/register")
+def auth_register(req: AuthRegisterRequest):
+    """Register a new enterprise operator with custom clearance and profile."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    op_id = f"OP-{abs(hash(req.email)) % 900 + 100:03d}"
+    colors = ["#6366f1", "#06b6d4", "#a855f7", "#10b981", "#f59e0b"]
+    avatar_color = colors[abs(hash(req.name)) % len(colors)]
+    
+    cursor.execute("""
+        INSERT OR REPLACE INTO operators (id, name, email, role, department, clearance_level, avatar_color, last_login)
+        VALUES (?, ?, ?, ?, ?, 'Tier-2 Verified', ?, datetime('now'))
+    """, (op_id, req.name, req.email.strip().lower(), req.role or 'AGENT_OPERATOR', req.department or 'AI Operations', avatar_color))
+    conn.commit()
+    cursor.execute("SELECT * FROM operators WHERE id = ?", (op_id,))
+    operator = dict(cursor.fetchone())
+    conn.close()
+
+    return {
+        "status": "SUCCESS",
+        "token": f"jwt-sec-{operator['id']}-live",
+        "operator": operator
+    }
+

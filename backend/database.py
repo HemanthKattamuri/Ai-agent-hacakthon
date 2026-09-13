@@ -186,6 +186,20 @@ def init_db():
         )
     """)
 
+    # 12. Security Operators & User Profiles Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS operators (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            role TEXT NOT NULL DEFAULT 'AGENT_OPERATOR',
+            department TEXT NOT NULL DEFAULT 'AI Operations',
+            clearance_level TEXT NOT NULL DEFAULT 'Tier-2',
+            avatar_color TEXT NOT NULL DEFAULT '#6366f1',
+            last_login TEXT NOT NULL
+        )
+    """)
+
     conn.commit()
     conn.close()
 

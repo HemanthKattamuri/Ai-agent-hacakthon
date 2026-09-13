@@ -26,6 +26,7 @@ def seed_database():
     cursor.execute("DELETE FROM products")
     cursor.execute("DELETE FROM customers")
     cursor.execute("DELETE FROM policies")
+    cursor.execute("DELETE FROM operators")
     cursor.execute("PRAGMA foreign_keys = ON")
 
     now = datetime.now(timezone.utc)
@@ -155,9 +156,21 @@ def seed_database():
         VALUES (?, ?, ?, ?, ?)
     """, policies_data)
 
+    # 6. Seed Security Operators
+    operators_data = [
+        ("OP-01", "Elena Rostova", "elena@resolveflow.ai", "LEAD_DIRECTOR", "AI Operations", "Tier-3 Admin", "#6366f1", now.isoformat()),
+        ("OP-02", "Marcus Vance", "marcus@resolveflow.ai", "SAFETY_AUDITOR", "Policy & Compliance", "Tier-2 Auditor", "#06b6d4", now.isoformat()),
+        ("OP-03", "Dr. Liam Thorne", "liam@resolveflow.ai", "SYSTEMS_ARCHITECT", "Core AI Infrastructure", "Tier-3 Root", "#a855f7", now.isoformat()),
+        ("OP-04", "Sarah Jenkins", "sarah@resolveflow.ai", "SUPPORT_LEAD", "VIP Resolution Operations", "Tier-2 Supervisor", "#10b981", now.isoformat())
+    ]
+    cursor.executemany("""
+        INSERT INTO operators (id, name, email, role, department, clearance_level, avatar_color, last_login)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, operators_data)
+
     conn.commit()
     conn.close()
-    print("ResolveFlow Database seeded successfully with benchmark scenarios and enterprise policies!")
+    print("ResolveFlow Database seeded successfully with benchmark scenarios, enterprise policies, and operator profiles!")
 
 if __name__ == "__main__":
     seed_database()

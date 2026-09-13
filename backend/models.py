@@ -23,3 +23,14 @@ class PolicyOverrideRequest(BaseModel):
 class InventoryUpdateRequest(BaseModel):
     product_id: str
     stock_quantity: int = Field(..., ge=0)
+
+class AuthLoginRequest(BaseModel):
+    email: str
+    password: Optional[str] = "demo123"
+
+class AuthRegisterRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100)
+    email: str = Field(..., min_length=5, max_length=100)
+    password: Optional[str] = "demo123"
+    role: Optional[str] = "AGENT_OPERATOR"
+    department: Optional[str] = "AI Operations"

@@ -529,17 +529,586 @@
       box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
       border: 2px solid white;
     }
+
+    /* ==========================================================================
+       STARTING LOGIN GATEWAY & ANIMATED NEURAL CORE WITH SMOOTHER ATTACHMENTS
+       ========================================================================== */
+    .auth-gateway-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: radial-gradient(circle at 50% 30%, #0d1527 0%, #030712 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      padding: 1.5rem;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auth-gateway-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(1.04);
+      pointer-events: none;
+    }
+    #auth-particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+    .auth-card {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 24px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 40px rgba(99, 102, 241, 0.18);
+      padding: 2.2rem 2rem;
+      color: #f8fafc;
+      z-index: 2;
+      transform-style: preserve-3d;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .auth-card:hover {
+      border-color: rgba(99, 102, 241, 0.45);
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.95), 0 0 50px rgba(99, 102, 241, 0.28);
+    }
+
+    /* Animated Brand Emblem & Smooth Attachments */
+    .neural-emblem-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      cursor: pointer;
+      perspective: 800px;
+    }
+    .neural-emblem {
+      width: 130px;
+      height: 130px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .neural-emblem svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 0 16px rgba(99, 102, 241, 0.45));
+    }
+    
+    @keyframes spinClockwise {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes spinCounterClockwise {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+    @keyframes breatheCore {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6)); }
+      50% { transform: scale(1.08); filter: drop-shadow(0 0 24px rgba(6, 182, 212, 0.85)); }
+    }
+    @keyframes dashFlow {
+      0% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: 120; }
+    }
+    @keyframes satellitePulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.25); opacity: 1; filter: drop-shadow(0 0 8px #06b6d4); }
+    }
+    @keyframes filamentGlow {
+      0%, 100% { opacity: 0.55; stroke-width: 1.8; }
+      50% { opacity: 0.95; stroke-width: 2.5; }
+    }
+
+    .orbital-ring-outer {
+      animation: spinClockwise 22s linear infinite;
+      transform-origin: 80px 80px;
+    }
+    .orbital-ring-inner {
+      animation: spinCounterClockwise 15s linear infinite;
+      transform-origin: 80px 80px;
+    }
+    .neural-core-center {
+      animation: breatheCore 4s ease-in-out infinite;
+      transform-origin: 80px 80px;
+    }
+    .satellite-node {
+      animation: satellitePulse 3s ease-in-out infinite;
+      transform-origin: center;
+    }
+    .smooth-filament {
+      stroke-dasharray: 6, 4;
+      animation: dashFlow 6s linear infinite, filamentGlow 3s ease-in-out infinite;
+    }
+
+    /* Auth tabs */
+    .auth-tab-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 0.3rem;
+      margin-bottom: 1.25rem;
+    }
+    .auth-tab-btn {
+      padding: 0.55rem 0.75rem;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .auth-tab-btn.active {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Demo Quick Logins */
+    .demo-operator-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .demo-operator-card {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      padding: 0.6rem 0.75rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .demo-operator-card:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    }
+    .operator-avatar-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    /* Inputs */
+    .auth-input-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .auth-input-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+    .auth-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .auth-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.84rem;
+      color: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .auth-input:focus {
+      border-color: #6366f1;
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25), 0 0 15px rgba(99, 102, 241, 0.2);
+    }
+    .auth-eye-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 4px;
+    }
+    .auth-eye-btn:hover {
+      color: var(--text-primary);
+    }
+
+    /* Strength meter */
+    .strength-meter-bar {
+      height: 4px;
+      border-radius: 9999px;
+      background: rgba(148, 163, 184, 0.15);
+      margin-top: 0.4rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .strength-meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 9999px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    /* Enter Button */
+    .btn-auth-primary {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      font-family: var(--font-display);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-auth-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.55);
+      background: linear-gradient(135deg, #6d70ff 0%, #574ef0 100%);
+    }
+    .btn-auth-primary:active {
+      transform: translateY(0);
+    }
+
+    /* Navbar Operator Profile Pill */
+    .nav-operator-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 9999px;
+      padding: 0.22rem 0.65rem 0.22rem 0.35rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-operator-pill:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .nav-operator-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #6366f1, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: white;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
 
+  <!-- STARTING LOGIN & ACCESS GATEWAY OVERLAY -->
+  <div id="auth-gateway-screen" class="auth-gateway-overlay">
+    <canvas id="auth-particle-canvas"></canvas>
+
+    <div class="auth-card" id="auth-card-container">
+      
+      <!-- Interactive Brand Emblem with Smoother Attachments -->
+      <div class="neural-emblem-wrap" id="emblem-interactive-wrap" title="Interactive 3D Neural Core with Smooth Attachment Splines">
+        <div class="neural-emblem" id="hero-neural-emblem">
+          <svg viewBox="0 0 160 160" width="140" height="140">
+            <defs>
+              <linearGradient id="grad-core" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#818cf8"/>
+                <stop offset="50%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+              </linearGradient>
+              <linearGradient id="grad-ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.8"/>
+                <stop offset="50%" stop-color="#6366f1" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="#a855f7" stop-opacity="0.9"/>
+              </linearGradient>
+              <linearGradient id="grad-ring2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#a855f7"/>
+                <stop offset="100%" stop-color="#38bdf8"/>
+              </linearGradient>
+              <filter id="glow-neon" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+              <filter id="glow-soft" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- Outer Continuous Orbital Ring -->
+            <g class="orbital-ring-outer">
+              <circle cx="80" cy="80" r="70" fill="none" stroke="url(#grad-ring1)" stroke-width="1.8" stroke-dasharray="14 8 28 6" filter="url(#glow-soft)" opacity="0.85" />
+              <circle cx="80" cy="80" r="62" fill="none" stroke="rgba(99, 102, 241, 0.25)" stroke-width="1" stroke-dasharray="4 6" />
+            </g>
+
+            <!-- Middle Counter-Rotating Orbital Ring -->
+            <g class="orbital-ring-inner">
+              <circle cx="80" cy="80" r="50" fill="none" stroke="url(#grad-ring2)" stroke-width="1.5" stroke-dasharray="20 12 40 8" filter="url(#glow-soft)" opacity="0.9" />
+            </g>
+
+            <!-- Smooth Dynamic Elastic Attachment Filaments (Spline Bezier Curves) -->
+            <g id="smooth-filaments-group">
+              <path id="filament-curve-1" class="smooth-filament" d="M 80,80 C 80,55 80,45 80,24" fill="none" stroke="url(#grad-ring1)" stroke-width="2" filter="url(#glow-neon)" />
+              <path id="filament-curve-2" class="smooth-filament" d="M 80,80 C 105,80 115,80 136,80" fill="none" stroke="url(#grad-ring2)" stroke-width="2" filter="url(#glow-neon)" />
+              <path id="filament-curve-3" class="smooth-filament" d="M 80,80 C 80,105 80,115 80,136" fill="none" stroke="url(#grad-ring1)" stroke-width="2" filter="url(#glow-neon)" />
+              <path id="filament-curve-4" class="smooth-filament" d="M 80,80 C 55,80 45,80 24,80" fill="none" stroke="url(#grad-ring2)" stroke-width="2" filter="url(#glow-neon)" />
+            </g>
+
+            <!-- 4 Orbiting Satellite Nodes attached with smooth splines -->
+            <g id="satellites-group">
+              <g id="sat-node-1" class="satellite-node" style="transform-origin: 80px 24px;">
+                <circle cx="80" cy="24" r="7" fill="#030712" stroke="#06b6d4" stroke-width="2" filter="url(#glow-neon)" />
+                <circle cx="80" cy="24" r="3" fill="#38bdf8" />
+              </g>
+              <g id="sat-node-2" class="satellite-node" style="transform-origin: 136px 80px; animation-delay: -0.75s;">
+                <circle cx="136" cy="80" r="7" fill="#030712" stroke="#6366f1" stroke-width="2" filter="url(#glow-neon)" />
+                <circle cx="136" cy="80" r="3" fill="#818cf8" />
+              </g>
+              <g id="sat-node-3" class="satellite-node" style="transform-origin: 80px 136px; animation-delay: -1.5s;">
+                <circle cx="80" cy="136" r="7" fill="#030712" stroke="#a855f7" stroke-width="2" filter="url(#glow-neon)" />
+                <circle cx="80" cy="136" r="3" fill="#c084fc" />
+              </g>
+              <g id="sat-node-4" class="satellite-node" style="transform-origin: 24px 80px; animation-delay: -2.25s;">
+                <circle cx="24" cy="80" r="7" fill="#030712" stroke="#10b981" stroke-width="2" filter="url(#glow-neon)" />
+                <circle cx="24" cy="80" r="3" fill="#34d399" />
+              </g>
+            </g>
+
+            <!-- Central Quantum Neural Core -->
+            <g class="neural-core-center">
+              <polygon points="80,50 106,65 106,95 80,110 54,95 54,65" fill="rgba(99, 102, 241, 0.25)" filter="url(#glow-neon)" />
+              <polygon points="80,54 102,67 102,93 80,106 58,93 58,67" fill="url(#grad-core)" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.7" />
+              <polygon points="80,54 102,67 80,80" fill="rgba(255, 255, 255, 0.45)" />
+              <polygon points="80,54 58,67 80,80" fill="rgba(255, 255, 255, 0.25)" />
+              <polygon points="58,67 58,93 80,80" fill="rgba(99, 102, 241, 0.6)" />
+              <polygon points="102,67 102,93 80,80" fill="rgba(6, 182, 212, 0.6)" />
+              <polygon points="58,93 80,106 80,80" fill="rgba(168, 85, 247, 0.7)" />
+              <polygon points="102,93 80,106 80,80" fill="rgba(79, 70, 229, 0.8)" />
+              <circle cx="80" cy="80" r="4" fill="#ffffff" filter="url(#glow-neon)" />
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Portal Header -->
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.65rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); font-size: 0.72rem; font-weight: 600; color: #a5b4fc; margin-bottom: 0.5rem;">
+          <span style="width: 6px; height: 6px; border-radius: 9999px; background: #10b981; display: inline-block;"></span>
+          Enterprise Security Gateway v2.4
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; margin-bottom: 0.25rem;">ResolveFlow Console</h2>
+        <p style="font-size: 0.8rem; color: var(--text-secondary);">Autonomous Customer Resolution & ReAct Agent Engine</p>
+      </div>
+
+      <!-- Tab Switcher: Sign In vs Register -->
+      <div class="auth-tab-bar">
+        <button id="auth-tab-signin-btn" class="auth-tab-btn active" onclick="switchAuthTab('signin')">Sign In</button>
+        <button id="auth-tab-register-btn" class="auth-tab-btn" onclick="switchAuthTab('register')">Register Operator</button>
+      </div>
+
+      <!-- Flash Status Message -->
+      <div id="auth-status-flash" style="display: none; padding: 0.6rem; border-radius: 10px; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.78rem; text-align: center; font-weight: 600; margin-bottom: 1rem;"></div>
+
+      <!-- SIGN IN VIEW -->
+      <div id="auth-view-signin">
+        <!-- 1-Click Demo Operator Selection -->
+        <div style="margin-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">1-Click Operator Personas</span>
+            <span style="font-size: 0.68rem; color: #818cf8;">Instant Access</span>
+          </div>
+          <div class="demo-operator-grid">
+            <button class="demo-operator-card" onclick="quickLoginDemo('elena')">
+              <div class="operator-avatar-icon" style="background: rgba(99, 102, 241, 0.25); border-color: #6366f1;">👩‍💼</div>
+              <div style="min-width: 0;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Elena Rostova</div>
+                <div style="font-size: 0.66rem; color: #94a3b8;">Lead Director</div>
+              </div>
+            </button>
+
+            <button class="demo-operator-card" onclick="quickLoginDemo('marcus')">
+              <div class="operator-avatar-icon" style="background: rgba(6, 182, 212, 0.25); border-color: #06b6d4;">🛡️</div>
+              <div style="min-width: 0;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Marcus Vance</div>
+                <div style="font-size: 0.66rem; color: #94a3b8;">Policy Auditor</div>
+              </div>
+            </button>
+
+            <button class="demo-operator-card" onclick="quickLoginDemo('liam')">
+              <div class="operator-avatar-icon" style="background: rgba(168, 85, 247, 0.25); border-color: #a855f7;">⚡</div>
+              <div style="min-width: 0;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dr. Liam Thorne</div>
+                <div style="font-size: 0.66rem; color: #94a3b8;">Systems Architect</div>
+              </div>
+            </button>
+
+            <button class="demo-operator-card" onclick="quickLoginDemo('sarah')">
+              <div class="operator-avatar-icon" style="background: rgba(16, 185, 129, 0.25); border-color: #10b981;">💼</div>
+              <div style="min-width: 0;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sarah Jenkins</div>
+                <div style="font-size: 0.66rem; color: #94a3b8;">Support Lead</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin: 0.8rem 0; opacity: 0.6;">
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+          <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 600;">OR SIGN IN WITH CREDENTIALS</span>
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+        </div>
+
+        <form id="form-auth-signin" onsubmit="handleAuthSignIn(event)">
+          <div class="auth-input-group">
+            <label class="auth-input-label" for="signin-email">Operator Work Email</label>
+            <div class="auth-input-wrap">
+              <input type="email" id="signin-email" class="auth-input" placeholder="elena@resolveflow.ai" required value="elena@resolveflow.ai">
+            </div>
+          </div>
+
+          <div class="auth-input-group">
+            <label class="auth-input-label" for="signin-password">Security Access Key / Password</label>
+            <div class="auth-input-wrap">
+              <input type="password" id="signin-password" class="auth-input" placeholder="••••••••••••" required value="demo-operator-2026">
+              <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('signin-password')" title="Show/Hide Key">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth-primary">
+            <span>Enter Autonomous Agent Console</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- REGISTER VIEW -->
+      <div id="auth-view-register" style="display: none;">
+        <form id="form-auth-register" onsubmit="handleAuthRegister(event)">
+          <div class="auth-input-group">
+            <label class="auth-input-label" for="reg-name">Operator Full Name</label>
+            <input type="text" id="reg-name" class="auth-input" placeholder="e.g. Alex Rivera" required>
+          </div>
+
+          <div class="auth-input-group">
+            <label class="auth-input-label" for="reg-email">Work Email</label>
+            <input type="email" id="reg-email" class="auth-input" placeholder="alex@company.com" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div class="auth-input-group">
+              <label class="auth-input-label" for="reg-dept">Department</label>
+              <select id="reg-dept" class="auth-input" style="cursor: pointer;">
+                <option value="AI Operations">AI Operations</option>
+                <option value="Policy & Compliance">Policy & Compliance</option>
+                <option value="Customer Experience">Customer Experience</option>
+                <option value="Core Engineering">Core Engineering</option>
+              </select>
+            </div>
+
+            <div class="auth-input-group">
+              <label class="auth-input-label" for="reg-role">Clearance Level</label>
+              <select id="reg-role" class="auth-input" style="cursor: pointer;">
+                <option value="Tier-2 Operator">Tier-2 Operator</option>
+                <option value="Tier-3 Admin">Tier-3 Admin</option>
+                <option value="Tier-2 Auditor">Tier-2 Auditor</option>
+                <option value="Tier-1 Observer">Tier-1 Observer</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="auth-input-group">
+            <label class="auth-input-label" for="reg-password">Security Password</label>
+            <div class="auth-input-wrap">
+              <input type="password" id="reg-password" class="auth-input" placeholder="Create robust password" oninput="checkPasswordEntropy(this.value)" required>
+              <button type="button" class="auth-eye-btn" onclick="togglePasswordVisibility('reg-password')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </button>
+            </div>
+            <div class="strength-meter-bar">
+              <div id="strength-meter-fill" class="strength-meter-fill"></div>
+            </div>
+            <div id="strength-meter-text" style="font-size: 0.68rem; color: var(--text-muted); margin-top: 0.25rem;">Enter password to analyze entropy</div>
+          </div>
+
+          <button type="submit" class="btn-auth-primary">
+            <span>Issue Security Clearance & Enter</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Navbar -->
   <header class="navbar">
     <div class="container navbar-inner">
-      <a href="#" class="logo-container">
-        <div class="logo-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      <a href="#" class="logo-container" onclick="openAuthGateway(); return false;" title="Click to view Operator Security Gateway">
+        <div class="logo-icon" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 10px;">
+          <svg viewBox="0 0 100 100" width="28" height="28" style="overflow: visible;">
+            <defs>
+              <linearGradient id="nav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#06b6d4" />
+                <stop offset="100%" stop-color="#6366f1" />
+              </linearGradient>
+            </defs>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="url(#nav-grad)" stroke-width="3" stroke-dasharray="16 8 32 8" style="animation: spinClockwise 14s linear infinite; transform-origin: 50px 50px;" />
+            <path d="M 50,50 L 50,14 M 50,50 L 86,50 M 50,50 L 50,86 M 50,50 L 14,50" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" stroke-dasharray="2 2" />
+            <circle cx="50" cy="14" r="3.5" fill="#06b6d4" />
+            <circle cx="86" cy="50" r="3.5" fill="#6366f1" />
+            <circle cx="50" cy="86" r="3.5" fill="#a855f7" />
+            <circle cx="14" cy="50" r="3.5" fill="#10b981" />
+            <polygon points="50,32 64,50 50,68 36,50" fill="url(#nav-grad)" stroke="#ffffff" stroke-width="1" style="animation: breatheCore 3s ease-in-out infinite; transform-origin: 50px 50px;" />
           </svg>
         </div>
         <div>
@@ -552,6 +1121,16 @@
       </a>
 
       <div class="nav-actions">
+        <!-- Operator Profile Pill -->
+        <div id="nav-operator-profile" class="nav-operator-pill" onclick="openAuthGateway()" title="Click to Switch Operator / Sign Out" style="display: none;">
+          <div id="nav-operator-avatar" class="nav-operator-avatar">E</div>
+          <div style="text-align: left;">
+            <div id="nav-operator-name" style="font-size: 0.76rem; font-weight: 700; line-height: 1.1;">Elena Rostova</div>
+            <div id="nav-operator-role" style="font-size: 0.62rem; color: #a5b4fc; line-height: 1;">Tier-3 Admin</div>
+          </div>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 2px; opacity: 0.6;"><path d="M6 9l6 6 6-6"></path></svg>
+        </div>
+
         <!-- Live Connection Status Pill -->
         <div id="backend-status-pill" class="badge badge-cyan" title="Auto-detects FastAPI backend or runs rich in-browser simulation">
           <span style="width: 6px; height: 6px; border-radius: 9999px; background: #06b6d4; display: inline-block;"></span>
@@ -2288,10 +2867,353 @@
       alert("✨ Demo scenarios and database reset to pristine initial state!");
     };
 
+    // ==========================================================================
+    // STARTING AUTH GATEWAY & SMOOTHER ATTACHMENTS PHYSICS ENGINE
+    // ==========================================================================
+    let currentOperator = null;
+
+    const DEFAULT_OPERATORS = {
+      elena: { id: "OP-01", name: "Elena Rostova", email: "elena@resolveflow.ai", role: "LEAD_DIRECTOR", department: "AI Operations", clearance: "Tier-3 Admin", color: "#6366f1" },
+      marcus: { id: "OP-02", name: "Marcus Vance", email: "marcus@resolveflow.ai", role: "SAFETY_AUDITOR", department: "Policy & Compliance", clearance: "Tier-2 Auditor", color: "#06b6d4" },
+      liam: { id: "OP-03", name: "Dr. Liam Thorne", email: "liam@resolveflow.ai", role: "SYSTEMS_ARCHITECT", department: "Core AI Infrastructure", clearance: "Tier-3 Root", color: "#a855f7" },
+      sarah: { id: "OP-04", name: "Sarah Jenkins", email: "sarah@resolveflow.ai", role: "SUPPORT_LEAD", department: "VIP Resolution Ops", clearance: "Tier-2 Supervisor", color: "#10b981" }
+    };
+
+    function initAuthSystem() {
+      const saved = localStorage.getItem("resolveflow_operator");
+      if (saved) {
+        try {
+          currentOperator = JSON.parse(saved);
+          closeAuthGateway(false);
+        } catch(e) {
+          openAuthGateway();
+        }
+      } else {
+        openAuthGateway();
+      }
+      renderOperatorProfile();
+      setupSmootherAttachmentPhysics();
+      setupStarfieldCanvas();
+    }
+
+    function openAuthGateway() {
+      const gateway = document.getElementById("auth-gateway-screen");
+      if (gateway) {
+        gateway.classList.remove("hidden");
+      }
+    }
+
+    function closeAuthGateway(animate = true) {
+      const gateway = document.getElementById("auth-gateway-screen");
+      if (gateway) {
+        if (animate) {
+          const statusText = document.getElementById("auth-status-flash");
+          if (statusText) {
+            statusText.style.display = "block";
+            statusText.textContent = "⚡ SECURITY CLEARANCE VERIFIED • ENTERING CONSOLE...";
+          }
+          setTimeout(() => {
+            gateway.classList.add("hidden");
+            if (statusText) statusText.style.display = "none";
+          }, 450);
+        } else {
+          gateway.classList.add("hidden");
+        }
+      }
+    }
+
+    function loginOperator(op) {
+      currentOperator = op;
+      localStorage.setItem("resolveflow_operator", JSON.stringify(op));
+      renderOperatorProfile();
+      closeAuthGateway(true);
+    }
+
+    function logoutOperator() {
+      localStorage.removeItem("resolveflow_operator");
+      currentOperator = null;
+      renderOperatorProfile();
+      openAuthGateway();
+    }
+
+    function renderOperatorProfile() {
+      const pill = document.getElementById("nav-operator-profile");
+      const nameEl = document.getElementById("nav-operator-name");
+      const roleEl = document.getElementById("nav-operator-role");
+      const avatarEl = document.getElementById("nav-operator-avatar");
+
+      if (currentOperator) {
+        if (nameEl) nameEl.textContent = currentOperator.name;
+        if (roleEl) roleEl.textContent = currentOperator.clearance || currentOperator.role;
+        if (avatarEl) {
+          avatarEl.style.background = currentOperator.color || "#6366f1";
+          avatarEl.textContent = currentOperator.name.charAt(0);
+        }
+        if (pill) pill.style.display = "flex";
+      } else {
+        if (pill) pill.style.display = "none";
+      }
+    }
+
+    function switchAuthTab(tab) {
+      const btnSignin = document.getElementById("auth-tab-signin-btn");
+      const btnRegister = document.getElementById("auth-tab-register-btn");
+      const viewSignin = document.getElementById("auth-view-signin");
+      const viewRegister = document.getElementById("auth-view-register");
+
+      if (tab === "signin") {
+        btnSignin.classList.add("active");
+        btnRegister.classList.remove("active");
+        viewSignin.style.display = "block";
+        viewRegister.style.display = "none";
+      } else {
+        btnSignin.classList.remove("active");
+        btnRegister.classList.add("active");
+        viewSignin.style.display = "none";
+        viewRegister.style.display = "block";
+      }
+    }
+
+    function quickLoginDemo(key) {
+      const op = DEFAULT_OPERATORS[key];
+      if (op) {
+        loginOperator(op);
+      }
+    }
+
+    function handleAuthSignIn(e) {
+      e.preventDefault();
+      const email = document.getElementById("signin-email").value.trim().toLowerCase();
+      let matchedOp = Object.values(DEFAULT_OPERATORS).find(o => o.email === email);
+      if (!matchedOp) {
+        const namePart = email.split("@")[0].replace(".", " ").replace(/\b\w/g, l => l.toUpperCase());
+        matchedOp = {
+          id: `OP-${Math.floor(100 + Math.random() * 899)}`,
+          name: namePart || "Verified Operator",
+          email: email,
+          role: "AGENT_OPERATOR",
+          department: "AI Operations",
+          clearance: "Tier-2 Operator",
+          color: "#6366f1"
+        };
+      }
+      loginOperator(matchedOp);
+    }
+
+    function handleAuthRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById("reg-name").value.trim();
+      const email = document.getElementById("reg-email").value.trim().toLowerCase();
+      const dept = document.getElementById("reg-dept").value;
+      const role = document.getElementById("reg-role").value;
+      const colors = ["#6366f1", "#06b6d4", "#a855f7", "#10b981", "#f59e0b"];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      const newOp = {
+        id: `OP-${Math.floor(500 + Math.random() * 499)}`,
+        name: name,
+        email: email,
+        department: dept,
+        role: role,
+        clearance: role,
+        color: color
+      };
+      loginOperator(newOp);
+    }
+
+    function togglePasswordVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.type = input.type === "password" ? "text" : "password";
+      }
+    }
+
+    function checkPasswordEntropy(pwd) {
+      const fill = document.getElementById("strength-meter-fill");
+      const text = document.getElementById("strength-meter-text");
+      if (!fill || !text) return;
+
+      if (!pwd || pwd.length === 0) {
+        fill.style.width = "0%";
+        text.textContent = "Enter password to analyze entropy";
+        text.style.color = "var(--text-muted)";
+        return;
+      }
+
+      let score = 0;
+      if (pwd.length >= 6) score += 1;
+      if (pwd.length >= 10) score += 1;
+      if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score += 1;
+      if (/[0-9]/.test(pwd)) score += 1;
+      if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+      if (score <= 2) {
+        fill.style.width = "30%";
+        fill.style.backgroundColor = "#f43f5e";
+        text.textContent = "Weak Key (Add letters, numbers & symbols)";
+        text.style.color = "#f43f5e";
+      } else if (score <= 4) {
+        fill.style.width = "70%";
+        fill.style.backgroundColor = "#f59e0b";
+        text.textContent = "Good Security Clearance";
+        text.style.color = "#f59e0b";
+      } else {
+        fill.style.width = "100%";
+        fill.style.backgroundColor = "#10b981";
+        text.textContent = "Military-Grade Security Fortress";
+        text.style.color = "#10b981";
+      }
+    }
+
+    // --- Smoother Attachment Physics Engine & Interactive 3D Parallax ---
+    function setupSmootherAttachmentPhysics() {
+      const emblemWrap = document.getElementById("emblem-interactive-wrap");
+      const heroEmblem = document.getElementById("hero-neural-emblem");
+      const fil1 = document.getElementById("filament-curve-1");
+      const fil2 = document.getElementById("filament-curve-2");
+      const fil3 = document.getElementById("filament-curve-3");
+      const fil4 = document.getElementById("filament-curve-4");
+
+      if (!emblemWrap || !heroEmblem) return;
+
+      let targetTiltX = 0, targetTiltY = 0;
+      let curTiltX = 0, curTiltY = 0;
+      let springOffset = { x: 0, y: 0 };
+      let filamentTime = 0;
+
+      document.addEventListener("mousemove", (e) => {
+        const rect = emblemWrap.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
+
+        if (dist < 700) {
+          const normX = (e.clientX - centerX) / 350;
+          const normY = (e.clientY - centerY) / 350;
+          targetTiltX = -normY * 16;
+          targetTiltY = normX * 16;
+          springOffset.x = normX * 12;
+          springOffset.y = normY * 12;
+        } else {
+          targetTiltX = 0;
+          targetTiltY = 0;
+          springOffset.x = 0;
+          springOffset.y = 0;
+        }
+      });
+
+      function animateFilamentLoop() {
+        filamentTime += 0.035;
+        curTiltX += (targetTiltX - curTiltX) * 0.08;
+        curTiltY += (targetTiltY - curTiltY) * 0.08;
+
+        heroEmblem.style.transform = `rotateX(${curTiltX.toFixed(2)}deg) rotateY(${curTiltY.toFixed(2)}deg) scale3d(1.02, 1.02, 1.02)`;
+
+        const oscX1 = Math.sin(filamentTime) * 4 + springOffset.x;
+        const oscY1 = Math.cos(filamentTime * 0.8) * 4 + springOffset.y;
+        const oscX2 = Math.cos(filamentTime * 1.2) * 5 - springOffset.x;
+        const oscY2 = Math.sin(filamentTime * 0.9) * 5 - springOffset.y;
+
+        // North Curve (80,80 -> 80,24)
+        if (fil1) {
+          const cx1 = 80 + oscX1 * 0.8;
+          const cy1 = 58 + oscY1 * 0.4;
+          const cx2 = 80 + oscX2 * 0.5;
+          const cy2 = 40 + oscY2 * 0.6;
+          fil1.setAttribute("d", `M 80,80 C ${cx1.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy2.toFixed(1)} 80,24`);
+        }
+        // East Curve (80,80 -> 136,80)
+        if (fil2) {
+          const cx1 = 102 + oscX1 * 0.5;
+          const cy1 = 80 + oscY1 * 0.8;
+          const cx2 = 120 + oscX2 * 0.6;
+          const cy2 = 80 + oscY2 * 0.5;
+          fil2.setAttribute("d", `M 80,80 C ${cx1.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy2.toFixed(1)} 136,80`);
+        }
+        // South Curve (80,80 -> 80,136)
+        if (fil3) {
+          const cx1 = 80 - oscX1 * 0.8;
+          const cy1 = 102 - oscY1 * 0.4;
+          const cx2 = 80 - oscX2 * 0.5;
+          const cy2 = 120 - oscY2 * 0.6;
+          fil3.setAttribute("d", `M 80,80 C ${cx1.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy2.toFixed(1)} 80,136`);
+        }
+        // West Curve (80,80 -> 24,80)
+        if (fil4) {
+          const cx1 = 58 - oscX1 * 0.5;
+          const cy1 = 80 - oscY1 * 0.8;
+          const cx2 = 40 - oscX2 * 0.6;
+          const cy2 = 80 - oscY2 * 0.5;
+          fil4.setAttribute("d", `M 80,80 C ${cx1.toFixed(1)},${cy1.toFixed(1)} ${cx2.toFixed(1)},${cy2.toFixed(1)} 24,80`);
+        }
+
+        requestAnimationFrame(animateFilamentLoop);
+      }
+      requestAnimationFrame(animateFilamentLoop);
+    }
+
+    // --- Dynamic Starfield / Neural Canvas ---
+    function setupStarfieldCanvas() {
+      const canvas = document.getElementById("auth-particle-canvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener("resize", () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const particles = Array.from({ length: 45 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        size: Math.random() * 2 + 1,
+        color: Math.random() > 0.5 ? "rgba(99, 102, 241," : "rgba(6, 182, 212,",
+        alpha: Math.random() * 0.6 + 0.2
+      }));
+
+      function renderCanvas() {
+        ctx.clearRect(0, 0, width, height);
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color + p.alpha + ")";
+          ctx.fill();
+
+          for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 110) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.strokeStyle = `rgba(99, 102, 241, ${(1 - dist / 110) * 0.16})`;
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(renderCanvas);
+      }
+      renderCanvas();
+    }
+
     // --- Initialization ---
     renderScenarios();
     updateTicketContext();
     checkLiveBackend();
+    initAuthSystem();
   </script>
 </body>
 </html>
