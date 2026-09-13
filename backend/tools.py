@@ -129,6 +129,8 @@ def search_policy(issue_type: str, order_id: str, case_id: Optional[str] = None)
     if delivery_date_str:
         try:
             deliv_dt = datetime.fromisoformat(delivery_date_str.replace("Z", "+00:00"))
+            if deliv_dt.tzinfo is None:
+                deliv_dt = deliv_dt.replace(tzinfo=timezone.utc)
             days_since_delivery = max(0, (datetime.now(timezone.utc) - deliv_dt).days)
         except Exception:
             days_since_delivery = 5
@@ -184,8 +186,8 @@ def search_policy(issue_type: str, order_id: str, case_id: Optional[str] = None)
                 ]
             })
     elif "cancel" in issue_type.lower():
-        order_status = order["status"]
-        if order_status in ["Processing", "Pending_Fulfillment"]:
+        order_status = (order["status"] or "").strip().upper()
+        if order_status in ["PROCESSING", "PENDING_FULFILLMENT", "PENDING"]:
             policy_evaluation.update({
                 "authorized": True,
                 "permitted_actions": ["CANCEL_ORDER", "RESTOCK_INVENTORY"],
@@ -200,7 +202,7 @@ def search_policy(issue_type: str, order_id: str, case_id: Optional[str] = None)
                 "authorized": False,
                 "permitted_actions": ["ESCALATE_TO_HUMAN"],
                 "preferred_action": "ESCALATE_TO_HUMAN",
-                "reason": f"Order is already in status '{order_status}' and cannot be cancelled directly before delivery.",
+                "reason": f"Order is already in status '{order.get('status')}' and cannot be cancelled directly before delivery.",
                 "rules_applied": [
                     "Policy CAN-02: Orders in transit or delivered must follow the standard return process once received."
                 ]

@@ -1,12 +1,12 @@
 """
-Database initialization and connection management for QuestFlow RPG Engine.
-Uses SQLite for robust local relational storage.
+Database initialization and connection management for ResolveFlow.
+Uses SQLite for robust local relational storage and simulated enterprise database audits.
 """
 import sqlite3
 import os
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent / "questflow.db"
+DB_PATH = Path(__file__).resolve().parent / "resolveflow.db"
 
 def get_db_connection() -> sqlite3.Connection:
     """Return a connection with Row factory enabled."""
@@ -16,142 +16,173 @@ def get_db_connection() -> sqlite3.Connection:
     return conn
 
 def init_db():
-    """Create all core QuestFlow tables if they do not already exist."""
+    """Create all enterprise ResolveFlow tables if they do not already exist."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 1. Users Table
+    # 1. Customers Table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS customers (
             id TEXT PRIMARY KEY,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            salt TEXT NOT NULL,
-            class_name TEXT NOT NULL DEFAULT 'Code Mage',
-            avatar_url TEXT,
-            title TEXT DEFAULT 'Novice Adventurer',
-            theme_preference TEXT DEFAULT 'cyberpunk',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            tier TEXT NOT NULL DEFAULT 'STANDARD', -- STANDARD, VIP, PLATINUM, ENTERPRISE
+            account_created TEXT NOT NULL,
+            trust_score INTEGER NOT NULL DEFAULT 85,
+            total_spend REAL NOT NULL DEFAULT 0.0,
+            address TEXT NOT NULL
         )
     """)
 
-    # 2. Character Stats Table (1-to-1 with Users)
+    # 2. Products Catalog Table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS character_stats (
-            user_id TEXT PRIMARY KEY,
-            level INTEGER NOT NULL DEFAULT 1,
-            current_xp INTEGER NOT NULL DEFAULT 0,
-            next_level_xp INTEGER NOT NULL DEFAULT 100,
-            hp INTEGER NOT NULL DEFAULT 100,
-            max_hp INTEGER NOT NULL DEFAULT 100,
-            mp INTEGER NOT NULL DEFAULT 50,
-            max_mp INTEGER NOT NULL DEFAULT 50,
-            gold INTEGER NOT NULL DEFAULT 50,
-            gems INTEGER NOT NULL DEFAULT 5,
-            streak_count INTEGER NOT NULL DEFAULT 1,
-            last_active_date TEXT,
-            streak_freeze_count INTEGER NOT NULL DEFAULT 1,
-            intellect INTEGER NOT NULL DEFAULT 10,
-            strength INTEGER NOT NULL DEFAULT 10,
-            agility INTEGER NOT NULL DEFAULT 10,
-            vitality INTEGER NOT NULL DEFAULT 10,
-            charisma INTEGER NOT NULL DEFAULT 10,
-            tasks_completed_count INTEGER NOT NULL DEFAULT 0,
-            boss_damage_dealt INTEGER NOT NULL DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        CREATE TABLE IF NOT EXISTS products (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            sku TEXT UNIQUE NOT NULL,
+            category TEXT NOT NULL,
+            price REAL NOT NULL,
+            stock_quantity INTEGER NOT NULL DEFAULT 0,
+            is_active INTEGER NOT NULL DEFAULT 1
         )
     """)
 
-    # 3. Tasks Table (CRUD)
+    # 3. Orders Table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tasks (
+        CREATE TABLE IF NOT EXISTS orders (
             id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
+            customer_id TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            unit_price REAL NOT NULL,
+            total_amount REAL NOT NULL,
+            order_date TEXT NOT NULL,
+            status TEXT NOT NULL, -- DELIVERED, PROCESSING, SHIPPED, CANCELLED, REFUNDED
+            delivery_date TEXT,
+            tracking_number TEXT,
+            payment_method TEXT NOT NULL,
+            FOREIGN KEY (customer_id) REFERENCES customers(id),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    """)
+
+    # 4. Support Tickets Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tickets (
+            id TEXT PRIMARY KEY,
+            ticket_code TEXT UNIQUE NOT NULL,
+            customer_id TEXT NOT NULL,
+            order_id TEXT,
             title TEXT NOT NULL,
-            description TEXT,
-            category TEXT NOT NULL DEFAULT 'Quest', -- Habit, Daily, Quest, Todo
-            attribute_tag TEXT NOT NULL DEFAULT 'intellect', -- intellect, strength, agility, vitality, charisma
-            difficulty TEXT NOT NULL DEFAULT 'medium', -- trivial, easy, medium, hard, epic
-            priority TEXT NOT NULL DEFAULT 'medium', -- low, medium, high, urgent
-            xp_reward INTEGER NOT NULL DEFAULT 60,
-            gold_reward INTEGER NOT NULL DEFAULT 25,
-            is_completed INTEGER NOT NULL DEFAULT 0,
-            completed_at TIMESTAMP,
-            due_date TEXT,
-            streak_count INTEGER NOT NULL DEFAULT 0,
-            subtasks_json TEXT DEFAULT '[]',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-    """)
-
-    # 4. Inventory Table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS inventory (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            item_id TEXT NOT NULL,
-            item_name TEXT NOT NULL,
-            item_type TEXT NOT NULL, -- weapon, armor, helmet, pet, aura, potion, theme, badge
-            rarity TEXT NOT NULL DEFAULT 'common', -- common, rare, epic, legendary
-            stat_bonus_json TEXT DEFAULT '{}',
-            is_equipped INTEGER NOT NULL DEFAULT 0,
-            icon TEXT NOT NULL,
-            description TEXT,
-            purchased_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-    """)
-
-    # 5. Shop Catalogue Table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS shop_items (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            description TEXT NOT NULL,
-            item_type TEXT NOT NULL, -- weapon, armor, helmet, pet, aura, potion, theme, badge
-            rarity TEXT NOT NULL DEFAULT 'common',
-            price_gold INTEGER NOT NULL DEFAULT 0,
-            price_gems INTEGER NOT NULL DEFAULT 0,
-            stat_bonus_json TEXT DEFAULT '{}',
-            icon TEXT NOT NULL,
-            min_level INTEGER NOT NULL DEFAULT 1
-        )
-    """)
-
-    # 6. Boss Raids Table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS boss_raids (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            name TEXT NOT NULL,
-            description TEXT NOT NULL,
-            avatar_icon TEXT NOT NULL,
-            current_hp INTEGER NOT NULL,
-            max_hp INTEGER NOT NULL,
-            attack_power INTEGER NOT NULL DEFAULT 15,
-            reward_xp INTEGER NOT NULL DEFAULT 500,
-            reward_gold INTEGER NOT NULL DEFAULT 200,
-            reward_gems INTEGER NOT NULL DEFAULT 10,
-            is_defeated INTEGER NOT NULL DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-    """)
-
-    # 7. Activity & Battle Logs Table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS activity_logs (
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            action_type TEXT NOT NULL, -- TASK_COMPLETED, LEVEL_UP, BOSS_HIT, ITEM_BOUGHT, STREAK_ADVANCED
             message TEXT NOT NULL,
-            xp_gained INTEGER DEFAULT 0,
-            gold_gained INTEGER DEFAULT 0,
-            attribute_increased TEXT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            issue_type TEXT NOT NULL, -- DAMAGED_ITEM, RETURN_REQUEST, ORDER_CANCELLATION, POLICY_CONFLICT, GENERAL
+            priority TEXT NOT NULL DEFAULT 'MEDIUM', -- LOW, MEDIUM, HIGH, URGENT
+            status TEXT NOT NULL DEFAULT 'Pending', -- Pending, Investigating, Action Taken, Replanning, Resolved, Escalated
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (customer_id) REFERENCES customers(id),
+            FOREIGN KEY (order_id) REFERENCES orders(id)
+        )
+    """)
+
+    # 5. Replacements Table (Action Ledger)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS replacements (
+            id TEXT PRIMARY KEY,
+            original_order_id TEXT NOT NULL,
+            new_order_id TEXT NOT NULL,
+            product_id TEXT NOT NULL,
+            quantity INTEGER NOT NULL DEFAULT 1,
+            status TEXT NOT NULL DEFAULT 'DISPATCHED',
+            tracking_number TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (original_order_id) REFERENCES orders(id),
+            FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    """)
+
+    # 6. Refunds Table (Financial Ledger)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS refunds (
+            id TEXT PRIMARY KEY,
+            order_id TEXT NOT NULL,
+            customer_id TEXT NOT NULL,
+            amount REAL NOT NULL,
+            reason TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'PROCESSED',
+            timestamp TEXT NOT NULL,
+            transaction_reference TEXT NOT NULL,
+            FOREIGN KEY (order_id) REFERENCES orders(id),
+            FOREIGN KEY (customer_id) REFERENCES customers(id)
+        )
+    """)
+
+    # 7. Store Credits Table (Appeasement Ledger)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS store_credits (
+            id TEXT PRIMARY KEY,
+            customer_id TEXT NOT NULL,
+            amount REAL NOT NULL,
+            balance_remaining REAL NOT NULL,
+            reason TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (customer_id) REFERENCES customers(id)
+        )
+    """)
+
+    # 8. Human Escalations Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS escalations (
+            id TEXT PRIMARY KEY,
+            case_id TEXT NOT NULL,
+            ticket_id TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            priority TEXT NOT NULL DEFAULT 'HIGH',
+            assigned_team TEXT NOT NULL DEFAULT 'Tier-2 Support & Compliance',
+            status TEXT NOT NULL DEFAULT 'ESCALATED',
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY (ticket_id) REFERENCES tickets(id)
+        )
+    """)
+
+    # 9. Enterprise Policies Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS policies (
+            id TEXT PRIMARY KEY,
+            category TEXT NOT NULL,
+            policy_name TEXT NOT NULL,
+            rules_json TEXT NOT NULL,
+            summary TEXT NOT NULL
+        )
+    """)
+
+    # 10. Tool Call Audit Logs Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tool_call_logs (
+            id TEXT PRIMARY KEY,
+            case_id TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            tool_name TEXT NOT NULL,
+            input_params TEXT NOT NULL,
+            result TEXT NOT NULL,
+            status TEXT NOT NULL, -- SUCCESS, FAILURE, ERROR
+            duration_ms INTEGER NOT NULL DEFAULT 0
+        )
+    """)
+
+    # 11. Agent Cases Table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cases (
+            id TEXT PRIMARY KEY,
+            ticket_id TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'Pending',
+            goal TEXT,
+            initial_plan TEXT,
+            current_plan TEXT,
+            replan_reason TEXT,
+            final_resolution TEXT,
+            verification_badge TEXT,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY (ticket_id) REFERENCES tickets(id)
         )
     """)
 
@@ -160,4 +191,4 @@ def init_db():
 
 if __name__ == "__main__":
     init_db()
-    print("QuestFlow SQLite Database Initialized successfully.")
+    print("ResolveFlow SQLite database initialized successfully.")
